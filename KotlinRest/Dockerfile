@@ -5,4 +5,4 @@ COPY pom.xml /pom.xml
 
 RUN mvn clean package
 
-CMD find /target/ -name *.jar | xargs java -jar
+CMD find /target/ -name *.jar | xargs java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar

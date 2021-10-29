@@ -1,5 +1,13 @@
+kafka:
+  server: kafka:9093
 spring:
   profiles:
     active: development
-server:
-  port: 3080
+  kafka:
+    producer:
+      bootstrap-servers: ${kafka.server}
+    consumer:
+      bootstrap-servers: ${kafka.server}
+      auto-offset-reset: earliest
+    bootstrap-servers: ${kafka.server}
+
