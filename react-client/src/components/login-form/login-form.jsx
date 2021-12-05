@@ -12,30 +12,36 @@ export const LoginForm = props => {
 
     const onSubmit = async e => {
         e.preventDefault()
+
         try {
-            let requestUrl = `${config.root_url}/user/register`;
+            const obj = {username: getValues().username, password: getValues().password}
+            console.log(obj)
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            let requestUrl = `${config.root_url}/user/login`;
             let response = await fetch(requestUrl, {
-                mode: "cors",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(getValues())
+                method: 'POST',
+                headers: myHeaders,
+                body: JSON.stringify(obj),
+                redirect: 'follow'
             })
+
             if (response.status === 200) {
                 const data = await response.json();
-                if (data && data.status === 200) {
-                    props.setCurrentUser({username: data.data.username})
+                if (data) {
+                    console.log(data)
+                    props.setCurrentUser({username: data.username})
                     history.push("/chat")
                 }else{
                     window.alert(data.message)
                 }
             } else {
                 const message = await response.json();
-                setErrorMessage("Cannot log")
+                setErrorMessage("Cannot login. Please try again.")
             }
         } catch (e) {
-            console.log(e)
+            console.log(e.stack)
             setErrorMessage("Cannot connect with server..")
         }
     }
@@ -57,12 +63,12 @@ export const LoginForm = props => {
                 <Form method='POST' onSubmit={onSubmit}>
                     <FormGroup  className={"mt-5"}>
                         <Label for="username">Username: </Label>
-                        <Input type="username" onChange={e => handleChange(e, 'Username')} className={".message .bubble-container .bubble"}
+                        <Input type="username" onChange={e => handleChange(e, 'username')} className={".message .bubble-container .bubble"}
                                name="username" id="username" placeholder="Enter username" value={props.username}/>
                     </FormGroup>
                     <FormGroup>
                         <Label for="password">Password: </Label>
-                        <Input type="password" onChange={e => handleChange(e, 'Password')} className={".message .bubble-container .bubble"}
+                        <Input type="password" onChange={e => handleChange(e, 'password')} className={".message .bubble-container .bubble"}
                                name="password" id="password" placeholder="Enter password"/>
                     </FormGroup>
                     <FormGroup className={"mt-5"}>
@@ -83,8 +89,4 @@ export const LoginForm = props => {
             </div>
         </div>
     )
-
-
-
-
 }
