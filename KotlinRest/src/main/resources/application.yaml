@@ -1,5 +1,5 @@
 kafka:
-  server: kafka:9093
+  server: localhost:9092
 spring:
   profiles:
     active: development

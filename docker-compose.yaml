@@ -3,7 +3,7 @@ services:
   client:
     build: react-client
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - rest
   rest:
@@ -24,6 +24,7 @@ services:
   kafka:
     image: "bitnami/kafka:3.0.0"
     ports:
+      - '9092:9092'
       - '9093:9093'
     environment:
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093

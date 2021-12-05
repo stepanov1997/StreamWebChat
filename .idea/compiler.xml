@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="KotlinRest" target="11" />
+      <module name="KotlinRest" target="18" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

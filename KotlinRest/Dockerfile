@@ -1,8 +1,5 @@
-FROM maven:3.8.3-openjdk-17-slim as builder
+FROM openjdk:18-slim
 
-COPY src /src
-COPY pom.xml /pom.xml
+COPY target/launcher-0.0.1-SNAPSHOT.jar /launcher.jar
 
-RUN mvn clean package
-
-CMD find /target/ -name *.jar | xargs java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar
+CMD java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar /launcher.jar
