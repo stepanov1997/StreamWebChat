@@ -1,0 +1,14 @@
+@testing-library/user-event
+@types/jest
+@types/node
+@types/react
+@types/react-dom
+config
+history
+react-icons
+React-Router-Dom
+redux
+redux-logger
+redux-thunk
+styled-components
+typescript

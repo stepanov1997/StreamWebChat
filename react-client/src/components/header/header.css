@@ -1,0 +1,33 @@
+.header img {
+    margin: 15px 15px 15px 25px;
+    width: 200px;
+    height: auto;
+    padding: -10px;
+    outline: 1px #3b97ce;
+}
+
+/*.header .logoWrapper {*/
+/*    background-color: white;*/
+/*}*/
+
+.header .menu {
+    display: flex;
+    width: 350px;
+    font-size: larger;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-right: 10px;
+}
+
+.header .menu a {
+    color: white;
+    text-decoration-line: none;
+}
+
+.header .logo {
+    background-color: white;
+    height: auto;
+    border: 2px #3b97ce;
+    user-select: none;
+}
