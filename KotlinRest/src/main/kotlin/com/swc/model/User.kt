@@ -4,6 +4,10 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")
-class User(@Id val id: Int, val username: String, val password: String) {
-    constructor() : this(0, "", "")
+class User(@Id var id: Int,
+           val username: String,
+           val password: String,
+           val isOnline: Boolean,
+           @Transient val sequenceName: String = "users_sequence") {
+
 }

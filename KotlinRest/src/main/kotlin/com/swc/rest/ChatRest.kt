@@ -9,17 +9,18 @@ import reactor.core.publisher.Flux.just
 import java.time.Duration
 
 @RestController
+@RequestMapping("chat")
+@CrossOrigin(origins = ["*"])
 class ChatRest(val chatService: ChatService) {
 
     @GetMapping("/{value}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    @CrossOrigin
     fun getMessages(@PathVariable value: Int): Flux<String> {
         return chatService.getMessages()
     }
 
     @PostMapping
-    @CrossOrigin
-    fun sendMessage(@RequestBody message : String): ResponseEntity<Unit> {
+    fun sendMessage(@RequestBody message: String,
+                    @RequestBody(required = false) receiverUsername: String): ResponseEntity<Unit> {
         return ResponseEntity.ok(chatService.sendMessage(message))
     }
 }
