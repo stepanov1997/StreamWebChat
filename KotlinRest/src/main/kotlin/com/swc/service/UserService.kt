@@ -41,4 +41,8 @@ class UserService(@Autowired val userRepository : UserRepository) {
     fun imAliveSignal(): Any {
         return "I'm alive!";
     }
+
+    fun getOnlineUsers(): Any {
+        return userRepository.findAll().stream().filter { it.isOnline }
+    }
 }

@@ -4,6 +4,7 @@ import ConversationListItem from '../ConversationListItem';
 import Toolbar from '../Toolbar';
 import ToolbarButton from '../ToolbarButton';
 import axios from 'axios';
+import config from '../../assets/config.json'
 
 import './ConversationList.css';
 
@@ -14,12 +15,13 @@ export default function ConversationList(props) {
   },[])
 
  const getConversations = () => {
-    axios.get('https://randomuser.me/api/?results=20').then(response => {
-        let newConversations = response.data.results.map(result => {
+    axios.get(`${config.root_url}/user/online`).then(response => {
+        console.log(response.data)
+        let newConversations = response.data.map(result => {
           return {
-            photo: result.picture.large,
-            name: `${result.name.first} ${result.name.last}`,
-            text: 'Hello world! This is a long message that needs to be truncated.'
+            photo: "https://lh3.googleusercontent.com/ogw/ADea4I4OKqPcRdOEXv_3YD-HSz9c3Kd_jTbn1Rx5o1BfLSA=s32-c-mo",
+            name: result.username,
+            text: result.password
           };
         });
         setConversations([...conversations, ...newConversations])

@@ -6,6 +6,8 @@ import Message from '../Message';
 import moment from 'moment';
 
 import './MessageList.css';
+import axios from "axios";
+import config from "../../assets/config.json";
 
 const MY_USER_ID = 'apple';
 
@@ -18,68 +20,68 @@ export default function MessageList(props) {
 
   
   const getMessages = () => {
-     var tempMessages = [
-        {
-          id: 1,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 2,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 3,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 4,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 5,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 6,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 7,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 8,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 9,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 10,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-      ]
+      const tempMessages = [
+          {
+              id: 1,
+              author: 'apple',
+              message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 2,
+              author: 'orange',
+              message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 3,
+              author: 'orange',
+              message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 4,
+              author: 'apple',
+              message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 5,
+              author: 'apple',
+              message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 6,
+              author: 'apple',
+              message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 7,
+              author: 'orange',
+              message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 8,
+              author: 'orange',
+              message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 9,
+              author: 'apple',
+              message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
+              timestamp: new Date().getTime()
+          },
+          {
+              id: 10,
+              author: 'orange',
+              message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
+              timestamp: new Date().getTime()
+          },
+      ];
       setMessages([...messages, ...tempMessages])
   }
 
@@ -142,6 +144,22 @@ export default function MessageList(props) {
     return tempMessages;
   }
 
+    async function sendMessage(message) {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "text/plain");
+
+        let response = await fetch(`${config.root_url}/chat`, {
+            method: 'POST',
+            headers: myHeaders,
+            body: message,
+            redirect: 'follow'
+        })
+
+        const text = await response.text()
+        console.log(text)
+        setMessages([...messages, message])
+    }
+
     return(
       <div className="message-list">
         <Toolbar
@@ -162,7 +180,12 @@ export default function MessageList(props) {
           <ToolbarButton key="money" icon="ion-ios-card" />,
           <ToolbarButton key="games" icon="ion-logo-game-controller-b" />,
           <ToolbarButton key="emoji" icon="ion-ios-happy" />
-        ]}/>
+        ]} handleKeyPress={ async event => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            await sendMessage(event.target.value);
+          }
+        }} />
       </div>
     );
 }

@@ -1,5 +1,6 @@
 package com.swc.launcher
 
+import com.google.gson.Gson
 import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,6 +14,9 @@ class WebConfiguration : WebMvcConfigurer {
     override fun addCorsMappings(registry: org.springframework.web.servlet.config.annotation.CorsRegistry) {
         registry.addMapping("/**").allowedMethods("*").allowedOrigins("*")
     }
+
+    @Bean
+    fun gson() = Gson()
 
     @Bean
     fun topicExample(): NewTopic? {
