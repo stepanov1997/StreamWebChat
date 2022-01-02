@@ -1,6 +1,7 @@
 package com.swc.rest
 
 import com.swc.model.User
+import com.swc.model.UserUserModel
 import com.swc.service.SequenceGenerateServices
 import com.swc.service.UserService
 import org.springframework.boot.context.properties.bind.Bindable.mapOf
@@ -32,7 +33,7 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
     }
 
     @PostMapping("login")
-    fun login(@RequestBody u: User): ResponseEntity<User> {
+    fun login(@RequestBody u: User): ResponseEntity<UserUserModel?> {
         val user = userService.login(u) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(user);
     }
