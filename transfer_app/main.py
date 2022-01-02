@@ -1,46 +1,35 @@
-import datetime
-import time
+import json
 import sys
-from kafka import KafkaConsumer
 import threading
+import time
 import pymongo
-import socket
 from flask import Flask, Response
+from kafka import KafkaConsumer
 
 app = Flask(__name__)
 
-BOOTSTRAP_SERVERS = ['kafka:9093']
-myclient = pymongo.MongoClient("mongodb://mongodb:27017/")
-mydb = myclient["mydatabase"]
-mycol = mydb["customers"]
-
-def prime_generator(end=sys.maxsize):
-    for n in range(2, end):  # n starts from 2 to end
-        for x in range(2, n):  # check if x can be divided by n
-            if n % x == 0:  # if true then n is not prime
-                break
-        else:  # if x is found after exhausting all values of x
-            yield n  # generate the prime
+BOOTSTRAP_SERVERS = ['localhost:9092']
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["stream_web_chat"]
+mycol = mydb["messages"]
 
 
 @app.route("/stream")
 def stream():
-    def eventStream():
-        for elem in prime_generator():
-            # Poll data from the database
-            # and see if there's a new message
-            yield "{}".format(elem)
+    def event_stream():
+        change_stream = mycol.watch()
+        while True:
+            for change in change_stream:
+                print(change)
+                print(type(change))
+                yield "{}".format(change)
 
-    return Response(eventStream(), mimetype="text/event-stream")
+    return Response(event_stream(), mimetype="text/event-stream")
 
 
 def register_kafka_listener(topic, listener):
-    # Poll kafka
     def poll():
-        # Initialize consumer Instance
         consumer = KafkaConsumer(topic, bootstrap_servers=BOOTSTRAP_SERVERS)
-
-        print("About to start polling for topic:", topic)
         consumer.poll(6000)
         print("Started Polling for topic:", topic)
         for msg in consumer:
@@ -54,13 +43,9 @@ def register_kafka_listener(topic, listener):
 
 
 def kafka_listener(data):
-    message = {
-        "message": data,
-        "datetime": datetime.datetime.now().strftime('%d.%B.%Y %H:%M:%S')
-    }
-    x = mycol.insert_one(message)
-    print(message)
-    print(x)
+    message = json.loads(data)
+    mycol.insert_one(message)
+    print(data)
 
 
 if __name__ == '__main__':
