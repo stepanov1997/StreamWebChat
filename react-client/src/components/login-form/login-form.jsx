@@ -15,7 +15,7 @@ export const LoginForm = props => {
 
         try {
             const obj = {username: getValues().username, password: getValues().password}
-            console.log(obj)
+
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
 
@@ -23,8 +23,7 @@ export const LoginForm = props => {
             let response = await fetch(requestUrl, {
                 method: 'POST',
                 headers: myHeaders,
-                body: JSON.stringify(obj),
-                redirect: 'follow'
+                body: JSON.stringify(obj)
             })
 
             if (response.status === 200) {
@@ -37,7 +36,6 @@ export const LoginForm = props => {
                     window.alert(data.message)
                 }
             } else {
-                const message = await response.json();
                 setErrorMessage("Cannot login. Please try again.")
             }
         } catch (e) {

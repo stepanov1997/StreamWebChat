@@ -18,7 +18,7 @@ export const AppSwitch = props => {
                     <LoginForm setCurrentUser={props.setCurrentUser}/>
             }/>
             <Route path="/register">
-                <RegisterForm/>
+                <RegisterForm />
             </Route>
 
             <Route path="/logout" render={() =>

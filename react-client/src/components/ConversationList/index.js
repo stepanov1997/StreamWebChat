@@ -15,7 +15,7 @@ export default function ConversationList(props) {
   },[])
 
  const getConversations = () => {
-    axios.get(`${config.root_url}/user/online`).then(response => {
+    axios.get(`${config.root_url}/user/getAll`).then(response => {
         console.log(response.data)
         let newConversations = response.data.map(result => {
           return {
