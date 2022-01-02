@@ -1,7 +1,9 @@
 package com.swc.service
 
 import com.swc.model.User
+import com.swc.model.UserUserModel
 import com.swc.repository.UserRepository
+import com.swc.repository.containsByUsername
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
@@ -14,7 +16,7 @@ class UserService(@Autowired val userRepository : UserRepository) {
     var currentUser : User? = null
 
     fun addUser(u: User): User? {
-        if(userRepository.findUserByUsername(u.username) != null) {
+        if(userRepository.containsByUsername(u.username)) {
             return null
         }
         return userRepository.insert(u)
@@ -22,13 +24,14 @@ class UserService(@Autowired val userRepository : UserRepository) {
     fun getUser(userId: Int): User? = userRepository.findById(userId).orElseGet(null)
     fun getUsers(): MutableList<User> = userRepository.findAll()
 
-    fun login(u: User): User? {
-        val user = userRepository.findUserByUsername(u.username)
-        if (user != null) {
-            if (user.password == u.password) {
-                currentUser = user
-                return user
-            }
+    fun login(u: User): UserUserModel? {
+        if(!userRepository.containsByUsername(u.username)) {
+            return null
+        }
+        val user = userRepository.findByUsername(u.username).firstOrNull()
+        if(user != null && user.password == u.password) {
+            currentUser = user
+            return UserUserModel(user)
         }
         return null;
     }
