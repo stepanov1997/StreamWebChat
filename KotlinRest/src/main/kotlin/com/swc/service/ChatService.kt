@@ -11,11 +11,11 @@ import reactor.core.publisher.Flux
 @Service
 class ChatService(val kafkaTemplate: KafkaTemplate<String?, String?>, val webClient: WebClient, val gson: Gson) {
 
-    fun sendMessage(message: Message): SendResult<String?, String?>? {
+    fun sendMessage(message: Message): String? {
         val listenableFuture = kafkaTemplate.send("messages", gson.toJson(message))
         val get = listenableFuture.get()
         println(get.producerRecord.key())
-        return get
+        return get.producerRecord.value()
     }
 
     fun getMessages(): Flux<Message> {

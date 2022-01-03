@@ -23,7 +23,7 @@ class ChatRest(val chatService: ChatService, val userRepository: UserRepository)
     }
 
     @PostMapping
-    fun sendMessage(@RequestBody messageUserModel: MessageUserModel): ResponseEntity<SendResult<String?, String?>?> {
+    fun sendMessage(@RequestBody messageUserModel: MessageUserModel): ResponseEntity<String> {
         val message = messageUserModel.toMessage(userRepository)
         return ResponseEntity.ok(chatService.sendMessage(message))
     }

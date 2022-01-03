@@ -5,11 +5,12 @@ import time
 import pymongo
 from flask import Flask, Response
 from kafka import KafkaConsumer
+import os
 
 app = Flask(__name__)
 
-BOOTSTRAP_SERVERS = ['localhost:9092']
-myclient = pymongo.MongoClient("mongodb://localhost:27017/", replicaset="rs0")
+BOOTSTRAP_SERVERS = [os.environ["KAFKA_BROKER"]]
+myclient = pymongo.MongoClient(f"mongodb://{os.environ['MONGO_HOST']}:{os.environ['MONGO_PORT']}/", replicaset=os.environ['REPLICA_SET'])
 mydb = myclient["stream_web_chat"]
 mycol = mydb["messages"]
 
