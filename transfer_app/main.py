@@ -1,7 +1,7 @@
 import json
-import sys
 import threading
 import time
+
 import pymongo
 from flask import Flask, Response
 from kafka import KafkaConsumer
@@ -9,7 +9,7 @@ from kafka import KafkaConsumer
 app = Flask(__name__)
 
 BOOTSTRAP_SERVERS = ['localhost:9092']
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+myclient = pymongo.MongoClient("mongodb://localhost:27017/", replicaset="rs0")
 mydb = myclient["stream_web_chat"]
 mycol = mydb["messages"]
 
@@ -44,7 +44,10 @@ def register_kafka_listener(topic, listener):
 
 def kafka_listener(data):
     message = json.loads(data)
-    mycol.insert_one(message)
+    try:
+        mycol.insert_one(message)
+    except Exception as e:
+        print(e)
     print(data)
 
 
