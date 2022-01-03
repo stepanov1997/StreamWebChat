@@ -1,91 +1,105 @@
 import React, {useEffect, useState} from 'react'
-import {Button, Form, FormGroup, Label, Input, NavLink} from 'reactstrap';
-import {useForm} from 'react-hook-form'
+import {Button, Form, FormGroup, Label, Input, NavLink, Alert} from 'reactstrap';
 import config from '../../assets/config.json'
-import ReactDOM from "react-dom";
 import './register-form.css'
-import {LoginForm} from "../login-form/login-form";
-import {useHistory} from "react-router-dom";
-
+import {useHistory} from 'react-router-dom';
+import {useForm} from "react-hook-form";
 
 export const RegisterForm = props => {
-    const {register, handleSubmit, setValue} = useForm();
+    const {register, handleSubmit, setValue, getValues} = useForm();
     const [errorMessage, setErrorMessage] = useState("");
     const history = useHistory();
 
-    const onSubmit = async data => {
+    const onSubmit = async e => {
+        e.preventDefault()
+
         try {
-            let response = await fetch(`${config.root_url}/user/register`, {
-                mode: "cors",
-                method: "POST",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify(data)
+            const data = getValues()
+            if(data.password !== data.passwordConfirm) {
+                setErrorMessage("Passwords do not match")
+                return
+            }else {
+                setErrorMessage("")
+            }
+            const obj = {username: getValues().username, password: getValues().password}
+            console.log(obj)
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            let requestUrl = `${config.root_url}/user/register`;
+            let response = await fetch(requestUrl, {
+                method: 'POST',
+                headers: myHeaders,
+                body: JSON.stringify(obj)
             })
-            if (response.status === 200) {
-                history.push('/login');
+
+            if (response.status === 201 || response.status === 200) {
+                const data = await response.json();
+                if (data) {
+                    console.log(data)
+                    alert("User created successfully")
+                    setTimeout(() => {
+                        history.push('/login')
+                    }, 2000)
+                }else{
+                    window.alert(data.message)
+                }
             } else {
-                const message = await response.json();
-                setErrorMessage(message.message)
+                setErrorMessage("Cannot register. Please try again.")
             }
         } catch (e) {
-            setErrorMessage(e.message)
+            console.log(e.stack)
+            setErrorMessage("Cannot connect with server..")
         }
-        console.log(data)
     }
-    const handleChange = (event, name) => {
-        setValue(name, event.target.value);
-    };
     useEffect(() => {
         register("Username");
         register("Password");
         register("Email");
     }, [register]);
-
-    let handleClickToLogin = e => {
-        ReactDOM.render(
-            <React.StrictMode>
-                <LoginForm/>
-            </React.StrictMode>,
-            document.getElementById('root'))
+    const handleChange = (event, name) => {
+        setValue(name, event.target.value);
     };
-
+    let handleClickToLogin = e => {
+        history.push('/login');
+    };
     return (<div className={"register-main"}>
-            <h1>Registration</h1>
+            <h1>Register</h1>
             <hr/>
             <div className={'register-container'}>
-                <Form method='POST' onSubmit={handleSubmit(onSubmit)}>
-                    <FormGroup>
+                <Form method='POST' onSubmit={onSubmit}>
+                    <FormGroup  className={"mt-5"}>
                         <Label for="username">Username: </Label>
-                        <Input onChange={e => handleChange(e, 'Username')} {...register('Username', { required: true })}
-                               type="username"
-                               name="username" id="username" placeholder="Enter username"/>
+                        <Input type="username" onChange={e => handleChange(e, 'username')} className={".message .bubble-container .bubble"}
+                               name="username" id="username" placeholder="Enter username" value={props.username}/>
                     </FormGroup>
+                    <hr/>
                     <FormGroup>
                         <Label for="password">Password: </Label>
-                        <Input onChange={e => handleChange(e, 'Password')} {...register('Password', { required: true })}
-                               type="password"
+                        <Input type="password" onChange={e => handleChange(e, 'password')} className={".message .bubble-container .bubble"}
                                name="password" id="password" placeholder="Enter password"/>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="email">Email: </Label>
-                        <Input onChange={e => handleChange(e, 'Email')} {...register('Email', { required: true })}
-                               type="email"
-                               name="email" id="email" placeholder="Enter email"/>
+                        <Label for="passwordAgain">Password: </Label>
+                        <Input type="password" onChange={e => handleChange(e, 'passwordConfirm')} className={".message .bubble-container .bubble"}
+                               name="passwordConfirm" id="passwordConfirm" placeholder="Confirm password"/>
                     </FormGroup>
-                    <FormGroup>
+                    <FormGroup className={"mt-5"}>
                         <Button type={'submit'}>Register user</Button>
+                        <NavLink className={"login-link"} onClick={handleClickToLogin}>Login</NavLink>
                     </FormGroup>
-                    <FormGroup>
-                        <Label className="label">{errorMessage}</Label>
-                    </FormGroup>
-                    <FormGroup>
-                        <NavLink className={"register-link"} onClick={handleClickToLogin}>Login</NavLink>
-                    </FormGroup>
+                    {props.username ? (<FormGroup>
+                            <Label className="label textSuccess" >{props.username}</Label>
+                        </FormGroup>) :
+                        (<FormGroup>
+                            <Label className="label">{errorMessage}</Label>
+                        </FormGroup>)}
+
+                    {props.logout ? <FormGroup>
+                        <Label className="label textSuccess">{"You successfully logged out"}</Label>
+                    </FormGroup> : ""}
                 </Form>
             </div>
         </div>
-
     )
 }

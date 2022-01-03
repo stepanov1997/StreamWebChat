@@ -1,3 +1,41 @@
+html, body {
+    height: 100%;
+}
+
+@font-face {
+    font-family: Delicia-Regular;
+    src: url("../../assets/Delisia W00 Regular.otf") format("opentype");
+}
+
+.register-main input {
+    width: 200px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-style: none;
+    font-size: 15px;
+    font-weight: 600;
+}
+.register-main form {
+    color: white;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    flex-wrap: wrap;
+}
+
+.register-main form div {
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    vertical-align: baseline;
+    flex-wrap: wrap;
+}
+
 .register-main {
     height: 100%;
     display: flex;
@@ -6,14 +44,25 @@
     justify-content: center;
 }
 
-h1 {
+.register-main h1 {
     margin: 30px 0;
+    font-family: Delicia-Regular;
+    font-size: 60px;
+    color: #3b97ce;
+    font-weight: normal;
 }
 
-.register-container {
-    background-color: #99a5fc;
-    width: 300px;
-    height: 300px;
+.register-main label {
+    font-weight: 600;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.register-main .register-container {
+    background-color: #3b97ce;
+    width: 33%;
+    height: 50%;
+    border-color: transparent;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -21,22 +70,33 @@ h1 {
     justify-content: center;
 }
 
-.form-group {
-    margin: 20px 0;
-    text-align: center;
-}
-
-.label {
-    color: #ab0000;
-}
-
-
-.register-link {
+.register-main .login-link {
     color: #0000EE;
     cursor: pointer;
 }
 
-.register-link:hover {
+.register-main .login-link:hover {
     color: #800080;
     cursor: pointer;
+}
+
+.register-main .form-group {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.register-main .label {
+    color: #ab0000;
+}
+
+.btn {
+    background-color: white;
+    color: #3b97ce;
+    font-weight: 600;
+}
+
+.btn:hover {
+    margin: 0;
+    background-color: #3b97ce;
+    color: white;
 }
