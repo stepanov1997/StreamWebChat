@@ -1,7 +1,7 @@
 import json
+import sys
 import threading
 import time
-
 import pymongo
 from flask import Flask, Response
 from kafka import KafkaConsumer
