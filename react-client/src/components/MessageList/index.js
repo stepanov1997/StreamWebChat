@@ -146,18 +146,26 @@ export default function MessageList(props) {
 
     async function sendMessage(message) {
         const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "text/plain");
+        myHeaders.append("Content-Type", "application/json");
 
         let response = await fetch(`${config.root_url}/chat`, {
             method: 'POST',
             headers: myHeaders,
-            body: message,
-            redirect: 'follow'
+            body: JSON.stringify({
+                senderId: 1,
+                receiverId: 1,
+                text: message
+            })
         })
 
         const text = await response.text()
         console.log(text)
-        setMessages([...messages, message])
+        setMessages([...messages, {
+            id: 10,
+            author: 'apple',
+            message: message,
+            timestamp: new Date().getTime()
+        }])
     }
 
     return(
