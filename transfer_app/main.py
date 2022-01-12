@@ -5,25 +5,37 @@ import time
 import pymongo
 from flask import Flask, Response
 from kafka import KafkaConsumer
-import os
 
 app = Flask(__name__)
 
-BOOTSTRAP_SERVERS = [os.environ["KAFKA_BROKER"]]
-myclient = pymongo.MongoClient(f"mongodb://{os.environ['MONGO_HOST']}:{os.environ['MONGO_PORT']}/", replicaset=os.environ['REPLICA_SET'])
+BOOTSTRAP_SERVERS = ['localhost:9092']
+myclient = pymongo.MongoClient(host="127.0.10.1:27017")
 mydb = myclient["stream_web_chat"]
 mycol = mydb["messages"]
 
 
 @app.route("/stream")
-def stream():
+def stream_f():
     def event_stream():
-        change_stream = mycol.watch()
         while True:
-            for change in change_stream:
-                print(change)
-                print(type(change))
-                yield "{}".format(change)
+            resume_token = None
+            pipeline = [{'$match': {'operationType': 'insert'}}]
+            try:
+                with mydb.messages.watch(pipeline) as stream:
+                    for insert_change in stream:
+                        message = insert_change['fullDocument']
+                        message.pop('_id')
+                        print(message)
+                        resume_token = stream.resume_token
+                        yield f"{message}\n"
+            except pymongo.errors.PyMongoError:
+                if resume_token is None:
+                    logging.error('...')
+                else:
+                    with mydb.messages.watch(
+                            pipeline, resume_after=resume_token) as stream:
+                        for insert_change in stream:
+                            print(insert_change)
 
     return Response(event_stream(), mimetype="text/event-stream")
 
@@ -44,12 +56,12 @@ def register_kafka_listener(topic, listener):
 
 
 def kafka_listener(data):
+    print("Received data:", data)
     message = json.loads(data)
     try:
         mycol.insert_one(message)
     except Exception as e:
         print(e)
-    print(data)
 
 
 if __name__ == '__main__':
