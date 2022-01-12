@@ -10,4 +10,7 @@ spring:
       bootstrap-servers: ${kafka.server}
       auto-offset-reset: earliest
     bootstrap-servers: ${kafka.server}
-
+  data:
+    mongodb:
+      host: 127.0.10.1
+      port: 27017
