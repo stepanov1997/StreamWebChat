@@ -1,30 +1,30 @@
 package com.swc.rest
 
-import com.swc.model.Message
+import com.swc.model.MessageRemoteModel
 import com.swc.model.MessageUserModel
 import com.swc.repository.UserRepository
 import com.swc.service.ChatService
+import com.swc.service.SequenceGenerateServices
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.kafka.support.SendResult
+import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Flux.just
-import java.time.Duration
 
 @RestController
 @RequestMapping("chat")
 @CrossOrigin(origins = ["*"])
-class ChatRest(val chatService: ChatService, val userRepository: UserRepository) {
+class ChatRest(val chatService: ChatService, val userRepository: UserRepository, val sequenceGenerateServices: SequenceGenerateServices) {
 
-    @GetMapping("/{value}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun getMessages(@PathVariable value: Int): Flux<Message> {
-        return chatService.getMessages()
+    @GetMapping("/{senderId}/{receiverId}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun getMessages(@PathVariable senderId: Int, @PathVariable receiverId: Int): Flux<ServerSentEvent<MessageUserModel>> {
+        return chatService.getMessages(senderId, receiverId)
     }
 
     @PostMapping
-    fun sendMessage(@RequestBody messageUserModel: MessageUserModel): ResponseEntity<String> {
-        val message = messageUserModel.toMessage(userRepository)
+    fun sendMessage(@RequestBody messageRemoteModel: MessageRemoteModel): ResponseEntity<String> {
+        messageRemoteModel.id = sequenceGenerateServices.generateSequence("messages_sequence").toInt()
+        val message = messageRemoteModel.checkIds(userRepository) ?: return ResponseEntity.badRequest().body("Ids are not valid")
         return ResponseEntity.ok(chatService.sendMessage(message))
     }
 }

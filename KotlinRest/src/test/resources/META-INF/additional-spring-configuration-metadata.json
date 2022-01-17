@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "kafka.server",
+      "type": "java.lang.String",
+      "description": "Kafka server hostname."
+    }
+  ]
+}

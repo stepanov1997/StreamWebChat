@@ -12,5 +12,4 @@ spring:
     bootstrap-servers: ${kafka.server}
   data:
     mongodb:
-      host: 127.0.10.1
-      port: 27017
+      uri: "mongodb://127.0.10.1:27017,127.0.10.2:27017,127.0.10.3:27017/test"
