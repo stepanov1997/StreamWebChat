@@ -21,7 +21,7 @@ export default function Messenger(props) {
                 timestamp: new Date().getTime()
             }]);
         }
-    }, [messages])
+    }, [])
 
     return (
         <div className="scrollable messenger">
@@ -34,7 +34,7 @@ export default function Messenger(props) {
             </div>
 
             <div className="content">
-                <MessageList messages={messages} setMessages={setMessages()}/>
+                <MessageList messages={messages}/>
             </div>
         </div>
     );
