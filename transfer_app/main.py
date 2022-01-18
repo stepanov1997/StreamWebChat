@@ -43,7 +43,8 @@ def stream_f():
                                 "id": message['id'],
                                 "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
                                 "receiverUsername": usersColumn.find_one({'_id':receiver_id})['username'],
-                                "text": message['text']
+                                "text": message['text'],
+                                "timestamp": message['timestamp']
                             })}\n\n"""
             except pymongo.errors.PyMongoError:
                 if resume_token is None:
@@ -72,7 +73,8 @@ def getMessages():
                 "id": x['id'],
                 "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
                 "receiverUsername": usersColumn.find_one({'_id': receiver_id})['username'],
-                "text": x['text']
+                "text": x['text'],
+                "timestamp": x['timestamp']
             })}\n\n"""
 
     return Response(stream_with_context(getMessages_f()), mimetype="text/event-stream")

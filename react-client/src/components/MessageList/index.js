@@ -83,7 +83,8 @@ export default function MessageList(props) {
             body: JSON.stringify({
                 senderId: 1,
                 receiverId: 1,
-                text: message
+                text: message,
+                timestamp: new Date().getTime()
             })
         })
 

@@ -18,22 +18,22 @@ export default function Messenger(props) {
                 id: message.id,
                 author: message.senderUsername,
                 message: message.text,
-                timestamp: new Date().getTime()
+                timestamp: message.timestamp
             }]);
         }
     }, [])
 
     return (
-        <div className="scrollable messenger">
+        <div className="messenger">
 
-            <div className="sidebar">
+            <div className="scrollable sidebar">
                 <ConversationList actualConversationUser={actualConversationUser}
                                   setActualConversationUser={setActualConversationUser}
                                   lastMessage={lastMessage}
                 />
             </div>
 
-            <div className="content">
+            <div className="scrollable content">
                 <MessageList messages={messages}/>
             </div>
         </div>

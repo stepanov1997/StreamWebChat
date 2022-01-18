@@ -14,7 +14,6 @@ const App = () => {
                     <Header currentUser={currentUser}/>
                 </div>
                 <div className={"content"}>
-                    {(currentUser && currentUser.username) ? (<h1 style={{margin:"21.4px 0"}}>{`Welcome, ${currentUser.username}.`}</h1>) : ""}
                     <AppSwitch currentUser={currentUser}
                                setCurrentUser={setCurrentUser}/>
                 </div>

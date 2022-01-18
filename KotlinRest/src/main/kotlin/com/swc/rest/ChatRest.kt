@@ -22,9 +22,13 @@ class ChatRest(val chatService: ChatService, val userRepository: UserRepository,
     }
 
     @PostMapping
-    fun sendMessage(@RequestBody messageRemoteModel: MessageRemoteModel): ResponseEntity<String> {
+    fun sendMessage(@RequestBody messageRemoteModel: MessageRemoteModel): ResponseEntity<Any> {
         messageRemoteModel.id = sequenceGenerateServices.generateSequence("messages_sequence").toInt()
         val message = messageRemoteModel.checkIds(userRepository) ?: return ResponseEntity.badRequest().body("Ids are not valid")
-        return ResponseEntity.ok(chatService.sendMessage(message))
+        val sendMessage = chatService.sendMessage(message)
+        return when {
+            sendMessage != null -> ResponseEntity.ok(sendMessage)
+            else -> return ResponseEntity.internalServerError().build()
+        }
     }
 }

@@ -15,16 +15,18 @@ class Message(
     @DBRef val senderId: Int,
     @DBRef val receiverId: Int,
     val text: String,
+    val timestamp: Long,
     @Transient val sequenceName: String = "messages_sequence",
 ) {
-    fun toUserModel() = MessageRemoteModel(id, senderId, receiverId, text)
+    fun toUserModel() = MessageRemoteModel(id, senderId, receiverId, text, timestamp)
 }
 
 class MessageRemoteModel(
     @NotNull var id: Int,
     @NotNull val senderId: Int,
     @NotNull val receiverId: Int,
-    @NotNull val text: String
+    @NotNull val text: String,
+    @NotNull val timestamp: Long
 ) {
     fun checkIds(@NotNull userRepository: MongoRepository<User, Int>): MessageRemoteModel? =
         Stream.of(userRepository.findById(receiverId), userRepository.findById(senderId))
@@ -33,7 +35,7 @@ class MessageRemoteModel(
             .map { it.id }
             .toList()
             .takeIf { it.count() == 2 }
-            ?.let { MessageRemoteModel(id, it[0], it[1], text) }
+            ?.let { MessageRemoteModel(id, it[0], it[1], text, timestamp) }
 }
 
 class MessageUserModel{
@@ -41,6 +43,7 @@ class MessageUserModel{
     @JsonProperty("senderUsername") var senderUsername: String? = null
     @JsonProperty("receiverUsername") var receiverUsername: String? = null
     @JsonProperty("text") var text: String? = null
+    @JsonProperty("timestamp") val timestamp: Long? = null
 
     constructor()
 
