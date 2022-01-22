@@ -7,6 +7,7 @@ import Messenger from "../Messenger";
 
 export const AppSwitch = props => {
     const isAuth = props.currentUser
+    console.log(isAuth)
     return (
         <Switch>
             <Route path="/chat" render={() =>

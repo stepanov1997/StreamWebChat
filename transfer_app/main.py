@@ -40,7 +40,6 @@ def stream_f():
                             print(message)
                             resume_token = stream.resume_token
                             yield f"""data: {json.dumps({
-                                "id": message['id'],
                                 "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
                                 "receiverUsername": usersColumn.find_one({'_id':receiver_id})['username'],
                                 "text": message['text'],
@@ -70,7 +69,6 @@ def getMessages():
         for x in messagesColumn.find(query):
             x.pop('_id')
             yield f"""data: {json.dumps({
-                "id": x['id'],
                 "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
                 "receiverUsername": usersColumn.find_one({'_id': receiver_id})['username'],
                 "text": x['text'],

@@ -2,20 +2,21 @@ import React, {useEffect} from 'react';
 import shave from 'shave';
 
 import './ConversationListItem.css';
+import moment from "moment";
 
 export default function ConversationListItem(props) {
   useEffect(() => {
-    shave('.conversation-snippet', 20);
+    shave('.conversation-snippet', 200);
   })
 
-    const { photo, name, text } = props.data;
+    const { userId, username, isOnline, exists, timestamp, lastMessage } = props.data;
 
     return (
       <div className="conversation-list-item">
-        <img className="conversation-photo" src={photo} alt="conversation" />
+        <img className="conversation-photo" src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation" />
         <div className="conversation-info">
-          <h1 className="conversation-title">{ name }</h1>
-          <p className="conversation-snippet">{ text }</p>
+          <h1 className="conversation-title">{ username } { isOnline? ("🟢") : ("⚪")}</h1>
+            { exists && <p className="conversation-snippet">{ lastMessage } ({moment(timestamp).lang("bs").fromNow()})</p> }
         </div>
       </div>
     );

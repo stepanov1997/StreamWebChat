@@ -15,16 +15,9 @@ export default function ConversationList(props) {
     }, [])
 
     const getConversations = () => {
-        axios.get(`${config.root_url}/user/getAll`).then(response => {
+        axios.get(`${config.root_url}/chat/conversations/${props.currentUser.username}`).then(response => {
             console.log(response.data)
-            let newConversations = response.data.map(result => {
-                return {
-                    photo: "https://lh3.googleusercontent.com/ogw/ADea4I4OKqPcRdOEXv_3YD-HSz9c3Kd_jTbn1Rx5o1BfLSA=s32-c-mo",
-                    name: result.username,
-                    text: result.password
-                };
-            });
-            setConversations([...conversations, ...newConversations])
+            setConversations([...conversations, ...response.data])
         });
     }
 
@@ -43,12 +36,8 @@ export default function ConversationList(props) {
             {
                 conversations.map(conversation =>
                     <ConversationListItem
-                        key={conversation.name}
-                        data={{
-                            name: conversation.name,
-                            photo: conversation.photo,
-                            text: props.lastMessage
-                        }}
+                        key={`conversation${conversation.username}`}
+                        data={conversation}
                     />
                 )
             }

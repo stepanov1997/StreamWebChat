@@ -8,6 +8,7 @@ export default function Messenger(props) {
     const [lastMessage, setLastMessage] = useState([])
     const [messages, setMessages] = useState([])
 
+    const currentUser = props.currentUser
 
     useEffect(() => {
         const events = new EventSource("http://localhost:8080/chat/1/1");
@@ -27,7 +28,8 @@ export default function Messenger(props) {
         <div className="messenger">
 
             <div className="scrollable sidebar">
-                <ConversationList actualConversationUser={actualConversationUser}
+                <ConversationList currentUser={currentUser}
+                                  actualConversationUser={actualConversationUser}
                                   setActualConversationUser={setActualConversationUser}
                                   lastMessage={lastMessage}
                 />
