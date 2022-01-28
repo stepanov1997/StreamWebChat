@@ -12,7 +12,7 @@ export default function ConversationListItem(props) {
     const { userId, username, isOnline, exists, timestamp, lastMessage } = props.data;
 
     return (
-      <div className="conversation-list-item">
+      <div className="conversation-list-item" onClick={_ => props.setActualConversationUser(props.data)}>
         <img className="conversation-photo" src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation" />
         <div className="conversation-info">
           <h1 className="conversation-title">{ username } { isOnline? ("🟢") : ("⚪")}</h1>

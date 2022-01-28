@@ -22,8 +22,9 @@ usersColumn = mydb["users"]
 @cross_origin()
 def stream_f():
     args = request.args.to_dict()
-    sender_id = int(args["senderId"])
-    receiver_id = int(args["receiverId"])
+
+    sender_username = args["senderUsername"]
+    receiver_username = args["receiverUsername"]
 
     def event_stream():
         while True:
@@ -34,17 +35,22 @@ def stream_f():
             try:
                 with mydb.messages.watch(pipeline) as stream:
                     for insert_change in stream:
+
                         message = insert_change['fullDocument']
-                        if message['senderId'] == sender_id and message['receiverId'] == receiver_id:
+                        sender_is_sender = message['senderUsername'] == sender_username and message['receiverUsername'] == receiver_username
+                        sender_is_receiver = message['senderUsername'] == receiver_username and message['receiverUsername'] == sender_username
+
+                        if sender_is_sender or sender_is_receiver:
                             message.pop('_id')
                             print(message)
                             resume_token = stream.resume_token
                             yield f"""data: {json.dumps({
-                                "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
-                                "receiverUsername": usersColumn.find_one({'_id':receiver_id})['username'],
+                                "senderUsername": message['senderUsername'],
+                                "receiverUsername": message['receiverUsername'],
                                 "text": message['text'],
                                 "timestamp": message['timestamp']
                             })}\n\n"""
+
             except pymongo.errors.PyMongoError:
                 if resume_token is None:
                     logging.error('...')
@@ -61,16 +67,27 @@ def stream_f():
 @cross_origin()
 def getMessages():
     args = request.args.to_dict()
-    sender_id = int(args["senderId"])
-    receiver_id = int(args["receiverId"])
-    query = {'$and': [{"senderId": sender_id, "receiverId": receiver_id}]}
+    sender_username = args["senderUsername"]
+    receiver_username = args["receiverUsername"]
+    query = {
+        '$or': [
+            {'$and': [{
+                "senderUsername": sender_username,
+                "receiverUsername": receiver_username
+            }]},
+            {'$and': [{
+                "senderUsername": receiver_username,
+                "receiverUsername": sender_username
+            }]}
+        ]
+    }
 
     def getMessages_f():
         for x in messagesColumn.find(query):
             x.pop('_id')
             yield f"""data: {json.dumps({
-                "senderUsername": usersColumn.find_one({'_id': sender_id})['username'],
-                "receiverUsername": usersColumn.find_one({'_id': receiver_id})['username'],
+                "senderUsername": x['senderUsername'],
+                "receiverUsername": x['receiverUsername'],
                 "text": x['text'],
                 "timestamp": x['timestamp']
             })}\n\n"""

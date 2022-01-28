@@ -16,7 +16,7 @@ export const RegisterForm = props => {
         try {
             const data = getValues()
             if(data.password !== data.passwordConfirm) {
-                setErrorMessage("Passwords do not match")
+                setErrorMessage("passwords do not match")
                 return
             }else {
                 setErrorMessage("")
@@ -53,9 +53,9 @@ export const RegisterForm = props => {
         }
     }
     useEffect(() => {
-        register("Username");
-        register("Password");
-        register("Email");
+        register("username");
+        register("password");
+        register("email");
     }, [register]);
     const handleChange = (event, name) => {
         setValue(name, event.target.value);

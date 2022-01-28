@@ -38,6 +38,7 @@ export default function ConversationList(props) {
                     <ConversationListItem
                         key={`conversation${conversation.username}`}
                         data={conversation}
+                        setActualConversationUser={props.setActualConversationUser}
                     />
                 )
             }

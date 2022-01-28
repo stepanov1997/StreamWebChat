@@ -11,18 +11,20 @@ export default function Messenger(props) {
     const currentUser = props.currentUser
 
     useEffect(() => {
-        const events = new EventSource("http://localhost:8080/chat/1/1");
-        events.onmessage = e => {
-            const message = JSON.parse(e.data);
-            setLastMessage(message.text);
-            setMessages(prevState => [...prevState, {
-                id: message.id,
-                author: message.senderUsername,
-                message: message.text,
-                timestamp: message.timestamp
-            }]);
+        if(currentUser!==undefined && actualConversationUser!==undefined){
+            const events = new EventSource(`http://localhost:8080/chat/${currentUser.username}/${actualConversationUser.username}`);
+            events.onmessage = e => {
+                const message = JSON.parse(e.data);
+                setLastMessage(message.text);
+                setMessages(prevState => [...prevState, {
+                    id: message.id,
+                    author: message.senderUsername,
+                    message: message.text,
+                    timestamp: message.timestamp
+                }]);
+            }
         }
-    }, [])
+    }, [actualConversationUser])
 
     return (
         <div className="messenger">
@@ -36,7 +38,11 @@ export default function Messenger(props) {
             </div>
 
             <div className="scrollable content">
-                <MessageList messages={messages}/>
+                <MessageList messages={messages}
+                             setMessages={setMessages}
+                             currentUser={currentUser.username}
+                             actualConversationUser={actualConversationUser}
+                />
             </div>
         </div>
     );

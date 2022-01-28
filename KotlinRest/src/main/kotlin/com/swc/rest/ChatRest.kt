@@ -1,7 +1,6 @@
 package com.swc.rest
 
-import com.swc.model.MessageRemoteModel
-import com.swc.model.MessageUserModel
+import com.swc.model.Message
 import com.swc.repository.UserRepository
 import com.swc.service.ChatService
 import com.swc.service.SequenceGenerateServices
@@ -19,18 +18,20 @@ class ChatRest(val chatService: ChatService,
                val userRepository: UserRepository,
                val sequenceGenerateServices: SequenceGenerateServices) {
 
-    @GetMapping("/{senderId}/{receiverId}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun getMessages(@PathVariable senderId: Int, @PathVariable receiverId: Int): Flux<ServerSentEvent<MessageUserModel>> {
-        return chatService.getMessages(senderId, receiverId)
+    @GetMapping("/{senderUsername}/{receiverUsername}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun getMessages(@PathVariable senderUsername: String, @PathVariable receiverUsername: String): Flux<ServerSentEvent<Message>> {
+        return chatService.getMessages(senderUsername, receiverUsername)
     }
 
     @PostMapping
-    fun sendMessage(@RequestBody messageRemoteModel: MessageRemoteModel): ResponseEntity<Any> {
-        val message = messageRemoteModel.checkIds(userRepository) ?: return ResponseEntity.badRequest().body("Ids are not valid")
-        val sendMessage = chatService.sendMessage(message)
+    fun sendMessage(@RequestBody messageModel: Message): ResponseEntity<Any> {
+        if(!messageModel.checkIds(userRepository)) {
+            return ResponseEntity.badRequest().body("Ids are not valid")
+        }
+        val sendMessage = chatService.sendMessage(messageModel)
         return when {
             sendMessage != null -> ResponseEntity.ok(sendMessage)
-            else -> return ResponseEntity.internalServerError().build()
+            else -> ResponseEntity.internalServerError().build()
         }
     }
 

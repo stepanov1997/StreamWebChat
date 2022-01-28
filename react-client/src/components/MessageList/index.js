@@ -8,11 +8,12 @@ import moment from 'moment';
 import './MessageList.css';
 import config from "../../assets/config.json";
 
-const MY_USERNAME = "admin";
 
 export default function MessageList(props) {
 
-    const {messages, setMessages} = props;
+    const {messages, setMessages, currentUser, actualConversationUser} = props;
+
+    const MY_USERNAME = currentUser;
 
     const renderMessages = () => {
         let i = 0;
@@ -81,8 +82,8 @@ export default function MessageList(props) {
             method: 'POST',
             headers: myHeaders,
             body: JSON.stringify({
-                senderId: 1,
-                receiverId: 1,
+                senderUsername: currentUser,
+                receiverUsername: actualConversationUser.username,
                 text: message,
                 timestamp: new Date().getTime()
             })
@@ -90,18 +91,12 @@ export default function MessageList(props) {
 
         const text = await response.text()
         console.log(text)
-        setMessages([...messages, {
-            id: 10,
-            author: 'apple',
-            message: message,
-            timestamp: new Date().getTime()
-        }])
     }
 
     return (
         <div className="message-list">
             <Toolbar
-                title="Conversation Title"
+                title={actualConversationUser.username}
                 rightItems={[
                     <ToolbarButton key="info" icon="ion-ios-information-circle-outline"/>,
                     <ToolbarButton key="video" icon="ion-ios-videocam"/>,

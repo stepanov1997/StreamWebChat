@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @RestController
@@ -26,15 +29,27 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
     fun getOnlineUsers() = ResponseEntity.ok(userService.getOnlineUsers())
 
     @PostMapping("register")
-    fun register(@RequestBody u: User): ResponseEntity<User> {
-        u.id = sequenceGenerateServices.generateSequence("users_sequence").toInt()
-        val user = userService.addUser(u) ?: return ResponseEntity.status(HttpStatus.CONFLICT).build()
-        return ResponseEntity.created(URI.create("/user/get?userId=${u.id}")).body(user)
+    fun register(@RequestBody requestBody: HashMap<String, String>): ResponseEntity<User> {
+        val username = requestBody["username"] ?: return ResponseEntity.badRequest().build()
+        val password = requestBody["password"] ?: return ResponseEntity.badRequest().build()
+        val user = User(
+            sequenceGenerateServices.generateSequence("users_sequence").toInt(),
+            username,
+            password,
+            false,
+            LocalDateTime.now().minus(1, ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+            "users_sequence"
+        );
+        val userResponse = userService.addUser(user) ?: return ResponseEntity.status(HttpStatus.CONFLICT).build()
+        return ResponseEntity.created(URI.create("/user/get?userId=${userResponse.id}")).body(userResponse)
     }
 
     @PostMapping("login")
-    fun login(@RequestBody u: User): ResponseEntity<UserUserModel?> {
-        val user = userService.login(u) ?: return ResponseEntity.notFound().build()
+    fun login(@RequestBody requestBody: HashMap<String, String>): ResponseEntity<UserUserModel?> {
+        val username = requestBody["username"] ?: return ResponseEntity.badRequest().build()
+        val password = requestBody["password"] ?: return ResponseEntity.badRequest().build()
+
+        val user = userService.login(username, password) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(user);
     }
 

@@ -1,8 +1,7 @@
 package com.swc.service
 
 import com.google.gson.Gson
-import com.swc.model.MessageRemoteModel
-import com.swc.model.MessageUserModel
+import com.swc.model.Message
 import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
 import org.springframework.core.ParameterizedTypeReference
@@ -20,37 +19,37 @@ class ChatService(val kafkaTemplate: KafkaTemplate<String?, String?>,
                   val userRepository: UserRepository,
                   val chatRepository: ChatRepository) {
 
-    fun getMessages(senderId: Int, receiverId: Int): Flux<ServerSentEvent<MessageUserModel>> = Flux.concat(
+    fun getMessages(senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> = Flux.concat(
         webClient.get()
             .uri {
                 it.path("/messages")
-                    .queryParam("senderId", senderId)
-                    .queryParam("receiverId", receiverId)
+                    .queryParam("senderUsername", senderUsername)
+                    .queryParam("receiverUsername", receiverUsername)
                     .build()
             }
             .retrieve()
-            .bodyToFlux(object : ParameterizedTypeReference<ServerSentEvent<MessageUserModel>>() {})
+            .bodyToFlux(object : ParameterizedTypeReference<ServerSentEvent<Message>>() {})
             .doOnError(Throwable::printStackTrace),
         webClient.get()
             .uri {
                 it.path("/stream")
-                    .queryParam("senderId", senderId)
-                    .queryParam("receiverId", receiverId)
+                    .queryParam("senderUsername", senderUsername)
+                    .queryParam("receiverUsername", receiverUsername)
                     .build()
             }
             .retrieve()
-            .bodyToFlux(object : ParameterizedTypeReference<ServerSentEvent<MessageUserModel>>() {})
+            .bodyToFlux(object : ParameterizedTypeReference<ServerSentEvent<Message>>() {})
             .doOnError(Throwable::printStackTrace)
     )
 
-    fun sendMessage(message: MessageRemoteModel?): MessageRemoteModel? {
-        try {
+    fun sendMessage(message: Message?): Message? {
+        return try {
             val listenableFuture = kafkaTemplate.send("messages", gson.toJson(message))
             listenableFuture.get()
-            return message;
+            message
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 
@@ -62,7 +61,6 @@ class ChatService(val kafkaTemplate: KafkaTemplate<String?, String?>,
                         otherUser,
                         chatRepository
                             .findAll()
-                            .map { it.toUserModel(userRepository)}
                             .filter { it.senderUsername == username || it.receiverUsername == username }
                             .maxByOrNull { it.timestamp }
                 )}
