@@ -12,9 +12,9 @@ services:
       - "8080:8080"
       - "5005:5005"
     environment:
-      - KAFKA_SERVER=kafka:9093
-      - SPRING_DATA_MONGODB_HOST=mongo-rs0-1
-      - SPRING_DATA_MONGODB_PORT=27017
+      - KAFKA_SERVER=${KAFKA_INTERNAL_SERVER}
+      - SPRING_DATA_MONGODB_URI=${MONGODB_URI}
+      - TRANSFERAPP_URL=${TRANSFERAPP_URL}
     depends_on:
       - kafka
   zookeeper:
@@ -30,15 +30,15 @@ services:
       - '9093:9093'
     environment:
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://localhost:9092,EXTERNAL://kafka:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://${KAFKA_INTERNAL_SERVER},EXTERNAL://${KAFKA_SERVER}
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=${ZOOKEEPER_SERVER}
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       - ALLOW_PLAINTEXT_LISTENER=yes
     healthcheck:
-      test: [ "CMD", "/opt/bitnami/kafka/bin/kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list" ]
-      interval: 2s
+      test: [ "CMD", "/opt/bitnami/kafka/bin/kafka-topics.sh", "--zookeeper", "${ZOOKEEPER_SERVER}", "--list" ]
+      interval: 10s
       timeout: 2s
       retries: 15
 
@@ -50,7 +50,7 @@ services:
     container_name: mongodb
     build: ./mongo-rs0-1
     ports:
-      - "127.0.10.1:27017:27017"
+      - "27017:27017"
     volumes:
       - ./mongo-rs0-1/data:/data/db
     depends_on:
@@ -62,7 +62,7 @@ services:
     image: "mongo"
     command: --replSet rs0 --oplogSize 128
     ports:
-      - "127.0.10.2:27017:27017"
+      - "27018:27017"
     volumes:
       - ./mongo-rs0-2/data:/data/db
     restart: unless-stopped
@@ -71,7 +71,7 @@ services:
     image: "mongo"
     command: --replSet rs0 --oplogSize 128
     ports:
-      - "127.0.10.3:27017:27017"
+      - "27019:27017"
     volumes:
       - ./mongo-rs0-3/data:/data/db
     restart: unless-stopped
@@ -80,18 +80,21 @@ services:
     image: "setup-rs"
     build: ./setup
     depends_on:
-      - "mongo-rs0-1"
+      - mongo-rs0-1
+      - mongo-rs0-2
+      - mongo-rs0-3
 
   transfer_app:
     build: transfer_app
     ports:
       - "5000:5000"
     environment:
-      - MONGO_HOST=mongo-rs0-1
-      - MONGO_PORT=27017
-      - KAFKA_BROKER=kafka:9092
-      - REPLICA_SET=rs0
+      - BOOTSTRAP_SERVERS=${KAFKA_INTERNAL_SERVER}
+      - MONGO_HOST=${MONGO_HOSTNAMES}
+      - MONGO_PORT=${MONGODB_PORT1}
     depends_on:
       - rest
       - mongo-rs0-1
+      - mongo-rs0-2
+      - mongo-rs0-3
       - kafka
