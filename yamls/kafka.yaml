@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    swc.service: kafka
+  name: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      swc.service: kafka
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        swc.service: kafka
+    spec:
+      containers:
+        - env:
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: CLIENT://,EXTERNAL://
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_CFG_LISTENERS
+              value: CLIENT://:9092,EXTERNAL://:9093
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: CLIENT
+          image: bitnami/kafka:3.0.0
+          livenessProbe:
+            exec:
+              command:
+                - /opt/bitnami/kafka/bin/kafka-topics.sh
+                - --zookeeper
+                - ""
+                - --list
+            failureThreshold: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+          name: kafka
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          resources: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    swc.service: kafka
+  name: kafka
+spec:
+  selector:
+    swc.service: kafka
+  ports:
+    - name: "9092"
+      port: 9092
+      targetPort: 9092
+    - name: "9093"
+      port: 9093
+      targetPort: 9093

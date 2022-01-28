@@ -1,5 +1,5 @@
 transferapp:
-  url:
+  url: http://localhost:5000
 kafka:
   server: localhost:9092
 spring:

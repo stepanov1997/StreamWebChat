@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  labels:
+    swc.service: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      swc.service: client
+  template:
+    metadata:
+      labels:
+        swc.service: client
+    spec:
+      containers:
+        - image: client
+          name: client
+          ports:
+            - containerPort: 80
+          resources: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client
+  labels:
+    swc.service: client
+spec:
+  selector:
+    swc.service: client
+  ports:
+    - name: "3000"
+      port: 3000
+      targetPort: 80
