@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import threading
 import time
@@ -11,8 +12,11 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-BOOTSTRAP_SERVERS = ['localhost:9092']
-myclient = pymongo.MongoClient(host=["127.0.10.1", "127.0.10.2", "127.0.10.3"], port=27017)
+BOOTSTRAP_SERVERS = os.environ['BOOTSTRAP_SERVERS']
+MONGO_HOST = os.environ['MONGO_HOST'].split(",")
+MONGO_PORT = int(os.environ['MONGO_PORT'])
+
+myclient = pymongo.MongoClient(host=MONGO_HOST, port=MONGO_PORT)
 mydb = myclient["test"]
 messagesColumn = mydb["messages"]
 usersColumn = mydb["users"]
