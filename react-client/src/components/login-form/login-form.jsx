@@ -32,7 +32,7 @@ export const LoginForm = props => {
                     console.log(data)
                     props.setCurrentUser({username: data.username})
                     history.push("/chat")
-                }else{
+                } else {
                     window.alert(data.message)
                 }
             } else {
@@ -59,14 +59,16 @@ export const LoginForm = props => {
             <hr/>
             <div className={'login-container'}>
                 <Form method='POST' onSubmit={onSubmit}>
-                    <FormGroup  className={"mt-5"}>
+                    <FormGroup className={"mt-5"}>
                         <Label for="username">Username: </Label>
-                        <Input type="username" onChange={e => handleChange(e, 'username')} className={".message .bubble-container .bubble"}
+                        <Input type="username" onChange={e => handleChange(e, 'username')}
+                               className={".message .bubble-container .bubble"}
                                name="username" id="username" placeholder="Enter username" value={props.username}/>
                     </FormGroup>
                     <FormGroup>
                         <Label for="password">Password: </Label>
-                        <Input type="password" onChange={e => handleChange(e, 'password')} className={".message .bubble-container .bubble"}
+                        <Input type="password" onChange={e => handleChange(e, 'password')}
+                               className={".message .bubble-container .bubble"}
                                name="password" id="password" placeholder="Enter password"/>
                     </FormGroup>
                     <FormGroup className={"mt-5"}>
@@ -74,7 +76,7 @@ export const LoginForm = props => {
                         <NavLink className={"register-link"} onClick={handleClickToRegister}>Register</NavLink>
                     </FormGroup>
                     {props.username ? (<FormGroup>
-                            <Label className="label textSuccess" >{props.username}</Label>
+                            <Label className="label textSuccess">{props.username}</Label>
                         </FormGroup>) :
                         (<FormGroup>
                             <Label className="label">{errorMessage}</Label>

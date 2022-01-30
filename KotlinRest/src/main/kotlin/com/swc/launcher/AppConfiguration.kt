@@ -27,7 +27,7 @@ class WebConfiguration : WebMvcConfigurer {
     }
 
     @Bean
-    fun webClient(@Value("\${transferapp.url}") transferappUrl : String): WebClient {
+    fun webClient(@Value("\${transferapp.url}") transferappUrl: String): WebClient {
         return WebClient.create(transferappUrl)
     }
 }

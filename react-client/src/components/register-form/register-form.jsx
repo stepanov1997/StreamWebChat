@@ -15,10 +15,10 @@ export const RegisterForm = props => {
 
         try {
             const data = getValues()
-            if(data.password !== data.passwordConfirm) {
+            if (data.password !== data.passwordConfirm) {
                 setErrorMessage("passwords do not match")
                 return
-            }else {
+            } else {
                 setErrorMessage("")
             }
             const obj = {username: getValues().username, password: getValues().password}
@@ -41,7 +41,7 @@ export const RegisterForm = props => {
                     setTimeout(() => {
                         history.push('/login')
                     }, 2000)
-                }else{
+                } else {
                     window.alert(data.message)
                 }
             } else {
@@ -68,20 +68,23 @@ export const RegisterForm = props => {
             <hr/>
             <div className={'register-container'}>
                 <Form method='POST' onSubmit={onSubmit}>
-                    <FormGroup  className={"mt-5"}>
+                    <FormGroup className={"mt-5"}>
                         <Label for="username">Username: </Label>
-                        <Input type="username" onChange={e => handleChange(e, 'username')} className={".message .bubble-container .bubble"}
+                        <Input type="username" onChange={e => handleChange(e, 'username')}
+                               className={".message .bubble-container .bubble"}
                                name="username" id="username" placeholder="Enter username" value={props.username}/>
                     </FormGroup>
                     <hr/>
                     <FormGroup>
                         <Label for="password">Password: </Label>
-                        <Input type="password" onChange={e => handleChange(e, 'password')} className={".message .bubble-container .bubble"}
+                        <Input type="password" onChange={e => handleChange(e, 'password')}
+                               className={".message .bubble-container .bubble"}
                                name="password" id="password" placeholder="Enter password"/>
                     </FormGroup>
                     <FormGroup>
                         <Label for="passwordAgain">Password: </Label>
-                        <Input type="password" onChange={e => handleChange(e, 'passwordConfirm')} className={".message .bubble-container .bubble"}
+                        <Input type="password" onChange={e => handleChange(e, 'passwordConfirm')}
+                               className={".message .bubble-container .bubble"}
                                name="passwordConfirm" id="passwordConfirm" placeholder="Confirm password"/>
                     </FormGroup>
                     <FormGroup className={"mt-5"}>
@@ -89,7 +92,7 @@ export const RegisterForm = props => {
                         <NavLink className={"login-link"} onClick={handleClickToLogin}>Login</NavLink>
                     </FormGroup>
                     {props.username ? (<FormGroup>
-                            <Label className="label textSuccess" >{props.username}</Label>
+                            <Label className="label textSuccess">{props.username}</Label>
                         </FormGroup>) :
                         (<FormGroup>
                             <Label className="label">{errorMessage}</Label>

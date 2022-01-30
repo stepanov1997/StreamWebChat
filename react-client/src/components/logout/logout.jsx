@@ -7,5 +7,6 @@ export const Logout = props => {
         props.setCurrentUser("");
     }, [history, props])
 
-    return <Redirect to={{ pathname: '/login', state: { from: props.location } }} />;;
+    return <Redirect to={{pathname: '/login', state: {from: props.location}}}/>;
+    ;
 }

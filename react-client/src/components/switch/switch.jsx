@@ -19,7 +19,7 @@ export const AppSwitch = props => {
                     <LoginForm setCurrentUser={props.setCurrentUser}/>
             }/>
             <Route path="/register">
-                <RegisterForm />
+                <RegisterForm/>
             </Route>
 
             <Route path="/logout" render={() =>
@@ -31,7 +31,7 @@ export const AppSwitch = props => {
             <Route exact path={"/"} render={() =>
                 (!isAuth) ?
                     <Redirect to={"/login"}/> :
-                <Redirect to={"/chat"}/>
+                    <Redirect to={"/chat"}/>
             }/>
         </Switch>
     )

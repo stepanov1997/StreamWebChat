@@ -1,0 +1,15 @@
+FROM openjdk:18-slim as runnerBuilder
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+
+FROM openjdk:18-slim
+COPY --from=runnerBuilder dependencies/ ./
+RUN true
+COPY --from=runnerBuilder snapshot-dependencies/ ./
+RUN true
+COPY --from=runnerBuilder spring-boot-loader/ ./
+RUN true
+COPY --from=runnerBuilder application/ ./
+
+CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005", "-Dlog4j2.formatMsgNoLookups=true", "org.springframework.boot.loader.JarLauncher"]

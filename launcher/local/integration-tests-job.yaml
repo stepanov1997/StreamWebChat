@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: integration-tests
+spec:
+  template:
+    spec:
+      containers:
+        - name: integration-tests
+          image: localhost:5000/integration-tests:latest
+          env:
+            - name: ARCHIVE_DIRECTORY
+              value: /logs
+            - name: INTEGRATION_TESTS_PACKAGE
+              value: 'com.swc.integration_tests'
+            - name: NAMESPACE
+              value: 'integration-tests-namespace'
+      imagePullSecrets:
+        - name: platform-registry
+      restartPolicy: Never
+  backoffLimit: 0

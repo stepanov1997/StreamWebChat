@@ -1,5 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.it.IT,\
-  com.it.engine.ITEngine,\
-  com.it.engine.KubernetesService,\
-  com.it.engine.LogsService

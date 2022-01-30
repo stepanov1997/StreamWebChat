@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
+import {Link} from 'react-router-dom';
+import {connect} from 'react-redux';
 
-import { userActions } from '../_actions';
+import {userActions} from '../_actions';
 
 class HomePage extends React.Component {
     componentDidMount() {
@@ -14,7 +14,7 @@ class HomePage extends React.Component {
     }
 
     render() {
-        const { user, users } = this.props;
+        const {user, users} = this.props;
         return (
             <div className="col-md-6 col-md-offset-3">
                 <h1>Hi {user.firstName}!</h1>
@@ -29,8 +29,9 @@ class HomePage extends React.Component {
                                 {user.firstName + ' ' + user.lastName}
                                 {
                                     user.deleting ? <em> - Deleting...</em>
-                                    : user.deleteError ? <span className="text-danger"> - ERROR: {user.deleteError}</span>
-                                    : <span> - <a onClick={this.handleDeleteUser(user.id)}>Delete</a></span>
+                                        : user.deleteError ?
+                                            <span className="text-danger"> - ERROR: {user.deleteError}</span>
+                                            : <span> - <a onClick={this.handleDeleteUser(user.id)}>Delete</a></span>
                                 }
                             </li>
                         )}
@@ -45,9 +46,9 @@ class HomePage extends React.Component {
 }
 
 function mapState(state) {
-    const { users, authentication } = state;
-    const { user } = authentication;
-    return { user, users };
+    const {users, authentication} = state;
+    const {user} = authentication;
+    return {user, users};
 }
 
 const actionCreators = {
@@ -56,4 +57,4 @@ const actionCreators = {
 }
 
 const connectedHomePage = connect(mapState, actionCreators)(HomePage);
-export { connectedHomePage as HomePage };
+export {connectedHomePage as HomePage};

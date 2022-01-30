@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: integration-tests
+  labels:
+    itf.service: integration-tests
+spec:
+  selector:
+    matchLabels:
+      itf.service: integration-tests
+  template:
+    metadata:
+      labels:
+        itf.service: integration-tests
+    spec:
+      containers:
+        - name: integration-tests
+          image: localhost:5000/integration-tests:latest
+          env:
+            - name: ARCHIVE_DIRECTORY
+              value: /logs
+            - name: INTEGRATION_TESTS_PACKAGE
+              value: 'com.swc.integration_tests'
+            - name: NAMESPACE
+              value: 'integration-tests-namespace'
+#            - name: SPRING_PROFILES_ACTIVE
+#              value: 'local'
+          imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: integration-tests
+  labels:
+    itf.service: integration-tests
+spec:
+  type: NodePort
+  selector:
+    itf.service: integration-tests
+  ports:
+    - port: 5005
+      targetPort: 5005
+      nodePort: 30001

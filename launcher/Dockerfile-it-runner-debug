@@ -1,0 +1,15 @@
+FROM openjdk:18-slim as itBuilder
+ARG JAR_FILE=target/swc-it-runner.jar
+COPY ${JAR_FILE} application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+
+FROM openjdk:18-slim
+COPY --from=itBuilder dependencies/ ./
+RUN true
+COPY --from=itBuilder snapshot-dependencies/ ./
+RUN true
+COPY --from=itBuilder spring-boot-loader/ ./
+RUN true
+COPY --from=itBuilder application/ ./
+
+CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-Dlog4j2.formatMsgNoLookups=true", "org.springframework.boot.loader.JarLauncher"]

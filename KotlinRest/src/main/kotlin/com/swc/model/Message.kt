@@ -27,6 +27,6 @@ class Message(
 ) {
     fun checkIds(userRepository: UserRepository): Boolean {
         return userRepository.findByUsername(senderUsername) != null
-            && userRepository.findByUsername(receiverUsername) != null
+                && userRepository.findByUsername(receiverUsername) != null
     }
 }

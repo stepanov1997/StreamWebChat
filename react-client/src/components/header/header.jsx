@@ -8,7 +8,7 @@ export const Header = props => {
     return (
         <div className={"header"}>
             <div className={"logoWrapper"}>
-                <Link to="/"><img src={img} alt={"StreamChat"} className={"logo"} /></Link>
+                <Link to="/"><img src={img} alt={"StreamChat"} className={"logo"}/></Link>
                 {/*<Logo height={100} width={100} fill='white' stroke='white'/>*/}
             </div>
             <div className={"menu"}>

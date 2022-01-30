@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    swc.service: mongo-rs0-1
+  name: mongo-rs0-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      swc.service: mongo-rs0-1
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        swc.service: mongo-rs0-1
+    spec:
+      containers:
+        - image: mongo-start
+          name: mongodb
+          ports:
+            - containerPort: 27017
+          resources: { }
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    swc.service: mongo-rs0-1
+  name: mongo-rs0-1
+spec:
+  selector:
+    swc.service: mongo-rs0-1
+  ports:
+    - name: "27017"
+      port: 27017
+      targetPort: 27017

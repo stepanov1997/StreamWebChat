@@ -13,11 +13,13 @@ import reactor.core.publisher.Flux
 import java.io.Serializable
 
 @Service
-class ChatService(val kafkaTemplate: KafkaTemplate<String?, String?>,
-                  val webClient: WebClient,
-                  val gson: Gson,
-                  val userRepository: UserRepository,
-                  val chatRepository: ChatRepository) {
+class ChatService(
+    val kafkaTemplate: KafkaTemplate<String?, String?>,
+    val webClient: WebClient,
+    val gson: Gson,
+    val userRepository: UserRepository,
+    val chatRepository: ChatRepository
+) {
 
     fun getMessages(senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> = Flux.concat(
         webClient.get()
@@ -54,24 +56,28 @@ class ChatService(val kafkaTemplate: KafkaTemplate<String?, String?>,
     }
 
     fun getConversationsForUser(username: String): List<Map<String, Serializable>> {
-           return userRepository
-                .findAll()
-                .filter { username != it.username }
-                .map { otherUser -> Pair(
-                        otherUser,
-                        chatRepository
-                            .findAll()
-                            .filter { it.senderUsername == username || it.receiverUsername == username }
-                            .maxByOrNull { it.timestamp }
-                )}
-               .map { mapOf(
+        return userRepository
+            .findAll()
+            .filter { username != it.username }
+            .map { otherUser ->
+                Pair(
+                    otherUser,
+                    chatRepository
+                        .findAll()
+                        .filter { it.senderUsername == username || it.receiverUsername == username }
+                        .maxByOrNull { it.timestamp }
+                )
+            }
+            .map {
+                mapOf(
                     "userId" to it.first.id,
                     "username" to it.first.username,
                     "isOnline" to it.first.isOnline,
                     "exists" to (it.second != null),
                     "timestamp" to (it.second?.timestamp ?: 0),
                     "lastMessage" to (it.second?.text ?: "")
-                ) }
-                .toList()
+                )
+            }
+            .toList()
     }
 }

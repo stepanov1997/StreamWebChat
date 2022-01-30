@@ -1,5 +1,5 @@
 .conversation-list {
-  display: flex;
-  flex-direction: column;
-  width: available;
+    display: flex;
+    flex-direction: column;
+    width: available;
 }

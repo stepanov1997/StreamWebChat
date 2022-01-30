@@ -14,18 +14,23 @@ import java.io.Serializable
 @RestController
 @RequestMapping("chat")
 @CrossOrigin(origins = ["*"])
-class ChatRest(val chatService: ChatService,
-               val userRepository: UserRepository,
-               val sequenceGenerateServices: SequenceGenerateServices) {
+class ChatRest(
+    val chatService: ChatService,
+    val userRepository: UserRepository,
+    val sequenceGenerateServices: SequenceGenerateServices
+) {
 
     @GetMapping("/{senderUsername}/{receiverUsername}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun getMessages(@PathVariable senderUsername: String, @PathVariable receiverUsername: String): Flux<ServerSentEvent<Message>> {
+    fun getMessages(
+        @PathVariable senderUsername: String,
+        @PathVariable receiverUsername: String
+    ): Flux<ServerSentEvent<Message>> {
         return chatService.getMessages(senderUsername, receiverUsername)
     }
 
     @PostMapping
     fun sendMessage(@RequestBody messageModel: Message): ResponseEntity<Any> {
-        if(!messageModel.checkIds(userRepository)) {
+        if (!messageModel.checkIds(userRepository)) {
             return ResponseEntity.badRequest().body("Ids are not valid")
         }
         val sendMessage = chatService.sendMessage(messageModel)

@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.swc.it.ITLauncher,\
+  com.swc.it.engine.ITLauncherEngine,\
+  com.swc.runner.KubernetesService,\
+  com.swc.runner.LogsService,\
+  com.swc.runner.Runner
