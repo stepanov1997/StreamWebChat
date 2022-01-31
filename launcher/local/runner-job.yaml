@@ -16,7 +16,7 @@ spec:
             - name: ARCHIVE_DIRECTORY
               value: /logs
             - name: NAMESPACE
-              value: 'integration-tests-namespace'
+              value: 'swc-namespace'
       imagePullSecrets:
         - name: platform-registry
       restartPolicy: Never

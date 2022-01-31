@@ -43,6 +43,12 @@
             <artifactId>spring-native</artifactId>
             <version>${spring-native.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.curator/curator-x-async -->
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-async</artifactId>
+            <version>5.2.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -67,6 +73,10 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
         </dependency>
     </dependencies>
 

@@ -16,7 +16,7 @@ spec:
         swc.service: mongo-rs0-1
     spec:
       containers:
-        - image: mongo-start
+        - image: stepanov1997/swc-mongo-rs0-1:latest
           name: mongodb
           ports:
             - containerPort: 27017

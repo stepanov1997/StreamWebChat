@@ -11,11 +11,11 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "react-client", dependsOn = [KotlinRestService::class])
-class ReactClientService : KubernetesDeployment() {
+@RunnerComponent(value = "transfer-app", dependsOn = [KafkaService::class, SetupReplicaSetService::class])
+class TransferAppService : KubernetesDeployment() {
 
-    @Value("http://\${kubernetes.react-client.host}:\${kubernetes.react-client.port}")
-    var reactUrl: String? = null
+    @Value("http://\${kubernetes.transfer-app.host}:\${kubernetes.transfer-app.port}")
+    var transferAppUrl: String? = null
 
     private var yaml: String? = null
 
@@ -24,18 +24,18 @@ class ReactClientService : KubernetesDeployment() {
     private fun init() {
         val deploymentYamlPath =
 //            "k8s/client" + (if (deletingNamespaceAfterIts) "" else "-debug") + ".yaml"
-            "k8s/client.yaml"
+            "k8s/transfer-app.yaml"
         val deploymentYamlResource = ClassPathResource(deploymentYamlPath)
         yaml = String(deploymentYamlResource.inputStream.readAllBytes())
     }
 
     override fun getDeploymentYaml(): String {
-        return yaml ?: throw IllegalStateException("React yaml is null.")
+        return yaml ?: throw IllegalStateException("Transfer app yaml is null.")
     }
 
     override fun healthcheck(): Boolean {
         return RestTemplate()
-            .getForEntity(reactUrl ?: throw IllegalStateException("React Url is null."), String::class.java)
+            .getForEntity(transferAppUrl ?: throw IllegalStateException("Transfer app url is null."), String::class.java)
             .statusCode
             .is2xxSuccessful
     }

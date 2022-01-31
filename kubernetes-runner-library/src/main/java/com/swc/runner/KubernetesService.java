@@ -6,6 +6,8 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.github.cdimascio.dotenv.Dotenv;
+import io.github.cdimascio.dotenv.DotenvEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.lang.NonNull;
@@ -61,10 +63,15 @@ public class KubernetesService {
      * @return list of metadata (deployment, service or job) created by loading data from yaml file
      */
     private List<HasMetadata> load(Map<String, String> macros, String yamlContent) {
+        Dotenv dotenv = Dotenv.load();
+
         if (macros != null) {
             for (Map.Entry<String, String> entry : macros.entrySet()) {
                 yamlContent = yamlContent.replace("{{ " + entry.getKey() + " }}", entry.getValue());
             }
+        }
+        if(dotenv != null) {
+            yamlContent = replace(dotenv.entries(), yamlContent);
         }
         InputStream inputStream = new ByteArrayInputStream(yamlContent.getBytes(StandardCharsets.UTF_8));
         return client.load(inputStream).createOrReplace();
@@ -246,5 +253,14 @@ public class KubernetesService {
     }
 
     private record FutureService(Future<?> future, KubernetesDeployment service) {
+    }
+
+    public String replace(Set<DotenvEntry> entries, String value) {
+        while (value.contains("${")) {
+            for (DotenvEntry entry : entries) {
+                value = value.replace("${" + entry.getKey() + "}", entry.getValue());
+            }
+        }
+        return value;
     }
 }

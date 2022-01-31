@@ -11,11 +11,8 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "react-client", dependsOn = [KotlinRestService::class])
-class ReactClientService : KubernetesDeployment() {
-
-    @Value("http://\${kubernetes.react-client.host}:\${kubernetes.react-client.port}")
-    var reactUrl: String? = null
+@RunnerComponent(value = "setup-rs", dependsOn = [MongoThirdService::class])
+class SetupReplicaSetService : KubernetesDeployment() {
 
     private var yaml: String? = null
 
@@ -24,20 +21,18 @@ class ReactClientService : KubernetesDeployment() {
     private fun init() {
         val deploymentYamlPath =
 //            "k8s/client" + (if (deletingNamespaceAfterIts) "" else "-debug") + ".yaml"
-            "k8s/client.yaml"
+            "k8s/setup-rs.yaml"
         val deploymentYamlResource = ClassPathResource(deploymentYamlPath)
         yaml = String(deploymentYamlResource.inputStream.readAllBytes())
     }
 
     override fun getDeploymentYaml(): String {
-        return yaml ?: throw IllegalStateException("React yaml is null.")
+        return yaml ?: throw IllegalStateException("Setup replica set yaml is null.")
     }
 
     override fun healthcheck(): Boolean {
-        return RestTemplate()
-            .getForEntity(reactUrl ?: throw IllegalStateException("React Url is null."), String::class.java)
-            .statusCode
-            .is2xxSuccessful
+        Thread.sleep(5000)
+        return true
     }
 
     override fun getHealthcheckFailureThreshold(): Long {

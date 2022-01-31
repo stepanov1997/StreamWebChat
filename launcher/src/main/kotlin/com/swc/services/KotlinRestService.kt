@@ -7,15 +7,16 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import java.io.IOException
+import java.net.InetAddress
 import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "react-client", dependsOn = [KotlinRestService::class])
-class ReactClientService : KubernetesDeployment() {
+@RunnerComponent(value = "kotlin-rest", dependsOn = [TransferAppService::class])
+class KotlinRestService : KubernetesDeployment() {
 
-    @Value("http://\${kubernetes.react-client.host}:\${kubernetes.react-client.port}")
-    var reactUrl: String? = null
+    @Value("http://\${kubernetes.kotlin-rest.host}:\${kubernetes.kotlin-rest.port}")
+    var kotlinRestUrl: String? = null
 
     private var yaml: String? = null
 
@@ -24,18 +25,19 @@ class ReactClientService : KubernetesDeployment() {
     private fun init() {
         val deploymentYamlPath =
 //            "k8s/client" + (if (deletingNamespaceAfterIts) "" else "-debug") + ".yaml"
-            "k8s/client.yaml"
+            "k8s/rest.yaml"
         val deploymentYamlResource = ClassPathResource(deploymentYamlPath)
         yaml = String(deploymentYamlResource.inputStream.readAllBytes())
     }
 
     override fun getDeploymentYaml(): String {
-        return yaml ?: throw IllegalStateException("React yaml is null.")
+        return yaml ?: throw IllegalStateException("Kotlin rest yaml is null.")
     }
 
     override fun healthcheck(): Boolean {
         return RestTemplate()
-            .getForEntity(reactUrl ?: throw IllegalStateException("React Url is null."), String::class.java)
+            .getForEntity(
+                ("$kotlinRestUrl/chat/conversations/admin"), String::class.java)
             .statusCode
             .is2xxSuccessful
     }

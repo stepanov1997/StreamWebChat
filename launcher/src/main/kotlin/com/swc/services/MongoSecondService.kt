@@ -11,11 +11,11 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "react-client", dependsOn = [KotlinRestService::class])
-class ReactClientService : KubernetesDeployment() {
+@RunnerComponent(value = "mongo-rs0-2", dependsOn = [MongoFirstService::class])
+class MongoSecondService : KubernetesDeployment() {
 
-    @Value("http://\${kubernetes.react-client.host}:\${kubernetes.react-client.port}")
-    var reactUrl: String? = null
+    @Value("http://\${kubernetes.mongo-rs0-2.host}:\${kubernetes.mongo-rs0-2.port}")
+    var mongodbUrl: String? = null
 
     private var yaml: String? = null
 
@@ -24,18 +24,18 @@ class ReactClientService : KubernetesDeployment() {
     private fun init() {
         val deploymentYamlPath =
 //            "k8s/client" + (if (deletingNamespaceAfterIts) "" else "-debug") + ".yaml"
-            "k8s/client.yaml"
+            "k8s/mongo-rs0-2.yaml"
         val deploymentYamlResource = ClassPathResource(deploymentYamlPath)
         yaml = String(deploymentYamlResource.inputStream.readAllBytes())
     }
 
     override fun getDeploymentYaml(): String {
-        return yaml ?: throw IllegalStateException("React yaml is null.")
+        return yaml ?: throw IllegalStateException("The second Mongodb yaml is null.")
     }
 
     override fun healthcheck(): Boolean {
         return RestTemplate()
-            .getForEntity(reactUrl ?: throw IllegalStateException("React Url is null."), String::class.java)
+            .getForEntity(mongodbUrl ?: throw IllegalStateException("The second Mongodb url is null."), String::class.java)
             .statusCode
             .is2xxSuccessful
     }

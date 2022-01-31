@@ -4,6 +4,7 @@ COPY ${JAR_FILE} application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 FROM openjdk:18-slim
+COPY .env /.env
 COPY --from=runnerBuilder dependencies/ ./
 RUN true
 COPY --from=runnerBuilder snapshot-dependencies/ ./

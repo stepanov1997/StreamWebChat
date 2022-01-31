@@ -11,8 +11,9 @@ spec:
         swc.service: setup-rs
     spec:
       containers:
-        - image: setup-rs
+        - image: stepanov1997/swc-setup-mongo:latest
           name: setup-rs
           resources: { }
+          imagePullPolicy: Always
       restartPolicy: Never
   backoffLimit: 2

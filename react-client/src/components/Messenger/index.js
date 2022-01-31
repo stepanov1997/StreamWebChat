@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
 import './Messenger.css';
+import config from '../../assets/config.json'
 
 export default function Messenger(props) {
     const [actualConversationUser, setActualConversationUser] = useState({})
@@ -12,7 +13,7 @@ export default function Messenger(props) {
 
     useEffect(() => {
         if (currentUser !== undefined && actualConversationUser !== undefined) {
-            const events = new EventSource(`http://localhost:8080/chat/${currentUser.username}/${actualConversationUser.username}`);
+            const events = new EventSource(`http://${config.root_url}/chat/${currentUser.username}/${actualConversationUser.username}`);
             events.onmessage = e => {
                 const message = JSON.parse(e.data);
                 setLastMessage(message.text);

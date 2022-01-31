@@ -66,6 +66,12 @@ def stream_f():
 
     return Response(event_stream(), mimetype="text/event-stream")
 
+@app.route("/")
+@cross_origin()
+def imAlive():
+    return Response(json.dumps({
+        "status": "OK"
+    }), mimetype="application/json")
 
 @app.route("/messages")
 @cross_origin()

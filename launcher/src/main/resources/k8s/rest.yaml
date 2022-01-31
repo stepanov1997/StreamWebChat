@@ -18,9 +18,12 @@ spec:
       containers:
         - env:
             - name: KAFKA_SERVER
+              value: "${KAFKA_INTERNAL_SERVER}"
             - name: SPRING_DATA_MONGODB_URI
+              value: "${MONGODB_URI}"
             - name: TRANSFERAPP_URL
-          image: rest
+              value: "${TRANSFERAPP_URL}"
+          image: stepanov1997/swc-kotlin-rest:latest
           name: rest
           ports:
             - containerPort: 8080
@@ -37,10 +40,13 @@ metadata:
 spec:
   selector:
     swc.service: rest
+  type: NodePort
   ports:
     - name: "8080"
       port: 8080
       targetPort: 8080
+      nodePort: 30080
     - name: "5005"
       port: 5005
       targetPort: 5005
+      nodePort: 30005
