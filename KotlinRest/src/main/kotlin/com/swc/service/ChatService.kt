@@ -46,8 +46,7 @@ class ChatService(
 
     fun sendMessage(message: Message?): Message? {
         return try {
-            val listenableFuture = kafkaTemplate.send("messages", gson.toJson(message))
-            listenableFuture.get()
+            kafkaTemplate.send("messages", gson.toJson(message))
             message
         } catch (e: Exception) {
             e.printStackTrace()

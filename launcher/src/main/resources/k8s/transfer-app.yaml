@@ -18,7 +18,7 @@ spec:
       containers:
         - env:
             - name: BOOTSTRAP_SERVERS
-              value: "${KAFKA_INTERNAL_SERVER}"
+              value: "${KAFKA_SERVER}"
             - name: MONGO_HOST
               value: "${MONGO_HOSTNAMES}"
             - name: MONGO_PORT
