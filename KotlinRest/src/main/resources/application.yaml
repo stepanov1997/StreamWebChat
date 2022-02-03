@@ -11,6 +11,8 @@ spring:
     consumer:
       bootstrap-servers: ${kafka.server}
       auto-offset-reset: earliest
+      group-id: kotlin-rest
+      enable-auto-commit: false
     bootstrap-servers: ${kafka.server}
   data:
     mongodb:

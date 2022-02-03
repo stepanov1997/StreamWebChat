@@ -31,7 +31,7 @@ spec:
               value: ${ZOOKEEPER_SERVER}
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: CLIENT
-          image: bitnami/kafka:3.0.0
+          image: bitnami/kafka:3.1.0
           livenessProbe:
             exec:
               command:
