@@ -5,7 +5,8 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface UserRepository : MongoRepository<User, Int> {
     fun findByUsername(username: String): List<User>?
+    fun containsByUsername(username: String) = findByUsername(username)?.isNotEmpty() ?: false
 }
 
-fun UserRepository.containsByUsername(username: String) = findByUsername(username)?.isNotEmpty() ?: false
+
 

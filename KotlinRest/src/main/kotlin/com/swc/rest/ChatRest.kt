@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import java.io.Serializable
 import java.util.*
-import kotlin.random.Random
 
 @RestController
 @RequestMapping("chat")

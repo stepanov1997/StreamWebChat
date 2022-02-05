@@ -29,4 +29,24 @@ class Message(
         return userRepository.findByUsername(senderUsername) != null
                 && userRepository.findByUsername(receiverUsername) != null
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Message) return false
+
+        if (senderUsername != other.senderUsername) return false
+        if (receiverUsername != other.receiverUsername) return false
+        if (text != other.text) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = senderUsername.hashCode()
+        result = 31 * result + receiverUsername.hashCode()
+        result = 31 * result + text.hashCode()
+        return result
+    }
+
+
 }

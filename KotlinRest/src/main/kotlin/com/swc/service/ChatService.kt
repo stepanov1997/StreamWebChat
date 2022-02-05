@@ -4,11 +4,7 @@ import com.google.gson.Gson
 import com.swc.model.Message
 import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.springframework.http.codec.ServerSentEvent
-import org.springframework.kafka.core.ConsumerFactory
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Service
@@ -16,9 +12,7 @@ import reactor.core.publisher.Flux
 import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.sender.SenderOptions
 import java.io.Serializable
-import java.time.Duration
 import java.util.*
-import kotlin.random.Random
 
 
 @Service
@@ -45,29 +39,32 @@ class ChatService(
             retrieveOldMessages(senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace),
-            ReactiveKafkaConsumerTemplate(receiverOptions.consumerProperty("group.id", groupId))
-                .receiveAutoAck()
-                .map { gson.fromJson(it.value(), Message::class.java) }
-                .filter { it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
-                        it.senderUsername == receiverUsername && it.receiverUsername == senderUsername }
+            retrieveNewMessages(groupId, senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace)
         )
 
+    fun retrieveNewMessages(groupId: String, senderUsername: String, receiverUsername: String) =
+        this.createReactiveKafkaConsumerTemplate(groupId)
+            .receiveAutoAck()
+            .map { gson.fromJson(it.value(), Message::class.java) }
+            .filter {
+                it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
+                it.senderUsername == receiverUsername && it.receiverUsername == senderUsername
+            }
+
     fun sendMessage(message: Message?): Message? {
-        return try {
-            val json = gson.toJson(message)
-            val producer = ReactiveKafkaProducerTemplate(senderOptions)
-            producer.send("messages", Objects.hash(json).toString(), json)
-                .doOnSuccess {
-                    println("Message sent to Kafka ${message?.text} at ${message?.timestamp}")
-                }
-                .subscribe()
-            message
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        var returnMessage = message
+        val json = gson.toJson(message)
+        val producer = createReactiveKafkaProducerTemplate()
+        producer.send("messages", Objects.hash(json).toString(), json)
+            .doOnSuccess {
+                println("Message sent to Kafka ${message?.text} at ${message?.timestamp}")
+            }.doOnError {
+                returnMessage = null
+            }
+            .subscribe()
+        return returnMessage
     }
 
     fun getConversationsForUser(username: String): List<Map<String, Serializable>> {
@@ -79,7 +76,8 @@ class ChatService(
                     otherUser,
                     chatRepository
                         .findAll()
-                        .filter { it.senderUsername == username || it.receiverUsername == username }
+                        .filter { it.senderUsername == otherUser.username && it.receiverUsername == username ||
+                                it.senderUsername == username && it.receiverUsername == otherUser.username }
                         .maxByOrNull { it.timestamp }
                 )
             }
@@ -95,4 +93,9 @@ class ChatService(
             }
             .toList()
     }
+
+    fun createReactiveKafkaConsumerTemplate(groupId: String): ReactiveKafkaConsumerTemplate<String, String> =
+       ReactiveKafkaConsumerTemplate(receiverOptions.consumerProperty("group.id", groupId))
+
+    fun createReactiveKafkaProducerTemplate() = ReactiveKafkaProducerTemplate(senderOptions)
 }

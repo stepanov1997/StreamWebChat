@@ -53,16 +53,16 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping("logout")
-    fun logout() = ResponseEntity.ok(userService.logout())
+//    @PostMapping("logout")
+//    fun logout() = ResponseEntity.ok(userService.logout())
 
     @GetMapping("current")
     fun currentUser() = if (userService.currentUser == null) ResponseEntity.notFound().build() else ResponseEntity.ok(
         userService.currentUser?.username
     )
 
-    @PostMapping("imAlive")
-    fun imAliveSignal() = ResponseEntity.ok(userService.imAliveSignal())
+//    @PostMapping("imAlive")
+//    fun imAliveSignal() = ResponseEntity.ok(userService.imAliveSignal())
 
 }
 

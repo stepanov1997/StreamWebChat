@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "users")
-class User(
+data class User(
     @Id var id: Int,
     val username: String,
     val password: String,
@@ -13,6 +13,6 @@ class User(
     @Transient val sequenceName: String = "users_sequence"
 )
 
-class UserUserModel(val id: Int, val username: String, val isOnline: Boolean, val lastOnline: String) {
+data class UserUserModel(val id: Int, val username: String, val isOnline: Boolean, val lastOnline: String) {
     constructor(user: User) : this(user.id, user.username, user.isOnline, user.lastOnline)
 }
