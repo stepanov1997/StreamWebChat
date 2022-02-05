@@ -11,7 +11,7 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "transfer-app", dependsOn = [KafkaService::class, SetupReplicaSetService::class])
+@RunnerComponent(value = "transfer-app", dependsOn = [KafkaService::class, MongoService::class])
 class TransferAppService : KubernetesDeployment() {
 
     @Value("http://\${kubernetes.transfer-app.host}:\${kubernetes.transfer-app.port}")

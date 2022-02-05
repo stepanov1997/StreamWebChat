@@ -11,10 +11,10 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@RunnerComponent(value = "mongo-rs0-1", dependsOn = [])
-class MongoFirstService : KubernetesDeployment() {
+@RunnerComponent(value = "mongo", dependsOn = [])
+class MongoService : KubernetesDeployment() {
 
-    @Value("http://\${kubernetes.mongo-rs0-1.host}:\${kubernetes.mongo-rs0-1.port}")
+    @Value("http://\${kubernetes.mongo.host}:\${kubernetes.mongo.port}")
     var mongodbUrl: String? = null
 
     private var yaml: String? = null
@@ -24,18 +24,18 @@ class MongoFirstService : KubernetesDeployment() {
     private fun init() {
         val deploymentYamlPath =
 //            "k8s/client" + (if (deletingNamespaceAfterIts) "" else "-debug") + ".yaml"
-            "k8s/mongo-rs0-1.yaml"
+            "k8s/mongo.yaml"
         val deploymentYamlResource = ClassPathResource(deploymentYamlPath)
         yaml = String(deploymentYamlResource.inputStream.readAllBytes())
     }
 
     override fun getDeploymentYaml(): String {
-        return yaml ?: throw IllegalStateException("The first Mongodb yaml is null.")
+        return yaml ?: throw IllegalStateException("The Mongodb yaml is null.")
     }
 
     override fun healthcheck(): Boolean {
         return RestTemplate()
-            .getForEntity(mongodbUrl ?: throw IllegalStateException("The first Mongodb url is null."), String::class.java)
+            .getForEntity(mongodbUrl ?: throw IllegalStateException("The Mongodb url is null."), String::class.java)
             .statusCode
             .is2xxSuccessful
     }

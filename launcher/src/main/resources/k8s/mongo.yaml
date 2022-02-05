@@ -2,27 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    swc.service: mongo-rs0-2
-  name: mongo-rs0-2
+    swc.service: mongo
+  name: mongo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      swc.service: mongo-rs0-2
+      swc.service: mongo
   strategy: { }
   template:
     metadata:
       labels:
-        swc.service: mongo-rs0-2
+        swc.service: mongo
     spec:
       containers:
-        - args:
-            - --replSet
-            - rs0
-            - --oplogSize
-            - "128"
-          image: mongo
-          name: mongo-rs0-2
+        - image: mongo:4.2.1
+          name: mongo
           ports:
             - containerPort: 27017
           resources: { }
@@ -32,13 +27,12 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    swc.service: mongo-rs0-2
-  name: mongo-rs0-2
+    swc.service: mongo
+  name: mongo
 spec:
   selector:
-    swc.service: mongo-rs0-2
+    swc.service: mongo
   ports:
-    - name: "27018"
-      port: 27018
+    - name: "27017"
+      port: 27017
       targetPort: 27017
-

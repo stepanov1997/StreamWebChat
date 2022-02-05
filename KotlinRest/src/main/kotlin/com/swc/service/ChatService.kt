@@ -5,29 +5,30 @@ import com.swc.model.Message
 import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
 import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.springframework.http.codec.ServerSentEvent
+import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
+import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.kafka.receiver.ReceiverOptions
+import reactor.kafka.sender.SenderOptions
 import java.io.Serializable
 import java.time.Duration
-import javax.annotation.PostConstruct
+import java.util.*
+import kotlin.random.Random
 
 
 @Service
 class ChatService(
-    val kafkaTemplate: KafkaTemplate<String, String>,
+    val receiverOptions: ReceiverOptions<String, String>,
+    val senderOptions: SenderOptions<String, String>,
     val gson: Gson,
-    val kafkaConsumer: KafkaConsumer<String, String>,
     val userRepository: UserRepository,
     val chatRepository: ChatRepository
 ) {
-
-    @PostConstruct
-    fun init() {
-        kafkaConsumer.subscribe(listOf("messages"))
-    }
 
     fun retrieveOldMessages(senderUsername: String, receiverUsername: String): Flux<Message> =
         Flux.fromStream {
@@ -39,34 +40,29 @@ class ChatService(
                 }.stream()
         }
 
-    fun retrieveNewMessages(senderUsername: String, receiverUsername: String): Flux<Message> =
-        Flux.create {
-            while (true) {
-                val records: ConsumerRecords<String, String> = kafkaConsumer.poll(Duration.ofMillis(100))
-                for (record in records) {
-                    val message: Message = gson.fromJson(record.value(), Message::class.java)
-                    if (message.senderUsername == senderUsername && message.receiverUsername == receiverUsername ||
-                        message.senderUsername == receiverUsername && message.receiverUsername == senderUsername
-                    ) {
-                        it.next(message)
-                    }
-                }
-            }
-        }
-
-    fun getMessages(senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> =
+    fun getMessages(senderUsername: String, receiverUsername: String, groupId: String): Flux<ServerSentEvent<Message>> =
         Flux.concat(
             retrieveOldMessages(senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace),
-            retrieveNewMessages(senderUsername, receiverUsername)
+            ReactiveKafkaConsumerTemplate(receiverOptions.consumerProperty("group.id", groupId))
+                .receiveAutoAck()
+                .map { gson.fromJson(it.value(), Message::class.java) }
+                .filter { it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
+                        it.senderUsername == receiverUsername && it.receiverUsername == senderUsername }
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace)
         )
 
     fun sendMessage(message: Message?): Message? {
         return try {
-            kafkaTemplate.send("messages", gson.toJson(message))
+            val json = gson.toJson(message)
+            val producer = ReactiveKafkaProducerTemplate(senderOptions)
+            producer.send("messages", Objects.hash(json).toString(), json)
+                .doOnSuccess {
+                    println("Message sent to Kafka ${message?.text} at ${message?.timestamp}")
+                }
+                .subscribe()
             message
         } catch (e: Exception) {
             e.printStackTrace()

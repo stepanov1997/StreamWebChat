@@ -16,4 +16,4 @@ spring:
     bootstrap-servers: ${kafka.server}
   data:
     mongodb:
-      uri: "mongodb://127.0.10.1:27017,127.0.10.2:27017,127.0.10.3:27017/test"
+      uri: mongodb://localhost:27017/test

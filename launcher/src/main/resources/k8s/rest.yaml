@@ -18,9 +18,9 @@ spec:
       containers:
         - env:
             - name: KAFKA_SERVER
-              value: "${KAFKA_INTERNAL_SERVER}"
+              value: "${KAFKA_SERVER}"
             - name: SPRING_DATA_MONGODB_URI
-              value: "${MONGODB_URI}"
+              value: "${MONGO_URI}"
             - name: TRANSFERAPP_URL
               value: "${TRANSFERAPP_URL}"
           image: stepanov1997/swc-kotlin-rest:latest

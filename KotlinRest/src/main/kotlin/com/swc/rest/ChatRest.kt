@@ -10,6 +10,7 @@ import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import java.io.Serializable
+import kotlin.random.Random
 
 @RestController
 @RequestMapping("chat")
@@ -25,7 +26,8 @@ class ChatRest(
         @PathVariable senderUsername: String,
         @PathVariable receiverUsername: String
     ): Flux<ServerSentEvent<Message>> {
-        return chatService.getMessages(senderUsername, receiverUsername)
+        val groupId = Random.nextInt(1_000_000, 10_000_000).toString()
+        return chatService.getMessages(senderUsername, receiverUsername, groupId)
     }
 
     @PostMapping

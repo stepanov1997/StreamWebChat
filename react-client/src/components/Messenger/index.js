@@ -12,7 +12,11 @@ export default function Messenger(props) {
     const currentUser = props.currentUser
 
     useEffect(() => {
-        if (currentUser !== undefined && actualConversationUser !== undefined) {
+        if (currentUser !== undefined
+            && currentUser.username !== undefined
+            && actualConversationUser !== undefined
+            && actualConversationUser.username !== undefined
+        ) {
             const events = new EventSource(`${config.root_url}/chat/${currentUser.username}/${actualConversationUser.username}`);
             events.onmessage = e => {
                 const message = JSON.parse(e.data);

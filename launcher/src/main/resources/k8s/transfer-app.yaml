@@ -18,11 +18,11 @@ spec:
       containers:
         - env:
             - name: BOOTSTRAP_SERVERS
-              value: "${KAFKA_INTERNAL_SERVER}"
+              value: "${KAFKA_SERVER}"
             - name: MONGO_HOST
-              value: "${MONGO_HOSTNAMES}"
+              value: "${MONGO_HOSTNAME}"
             - name: MONGO_PORT
-              value: "${MONGODB_PORT1}"
+              value: "${MONGO_PORT}"
           image: stepanov1997/swc-transferapp:latest
           name: transfer-app
           ports:

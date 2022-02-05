@@ -6,6 +6,7 @@ services:
       - "3000:80"
     depends_on:
       - rest
+
   rest:
     build: KotlinRest
     ports:
@@ -13,10 +14,11 @@ services:
       - "5005:5005"
     environment:
       - KAFKA_SERVER=${KAFKA_INTERNAL_SERVER}
-      - SPRING_DATA_MONGODB_URI=${MONGODB_URI}
+      - SPRING_DATA_MONGODB_URI=${MONGO_URI}
       - TRANSFERAPP_URL=${TRANSFERAPP_URL}
     depends_on:
       - kafka
+
   zookeeper:
     image: "bitnami/zookeeper:3.7.0"
     environment:
@@ -45,44 +47,12 @@ services:
     depends_on:
       - zookeeper
 
-  mongo-rs0-1:
-    image: "mongo-start"
-    container_name: mongodb
-    build: ./mongo-rs0-1
+  mongo:
+    image: "mongo"
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-rs0-1/data:/data/db
-    depends_on:
-      - "mongo-rs0-2"
-      - "mongo-rs0-3"
-    restart: unless-stopped
-
-  mongo-rs0-2:
-    image: "mongo"
-    command: --replSet rs0 --oplogSize 128
-    ports:
-      - "27018:27017"
-    volumes:
-      - ./mongo-rs0-2/data:/data/db
-    restart: unless-stopped
-
-  mongo-rs0-3:
-    image: "mongo"
-    command: --replSet rs0 --oplogSize 128
-    ports:
-      - "27019:27017"
-    volumes:
-      - ./mongo-rs0-3/data:/data/db
-    restart: unless-stopped
-
-  setup-rs:
-    image: "setup-rs"
-    build: ./setup
-    depends_on:
-      - mongo-rs0-1
-      - mongo-rs0-2
-      - mongo-rs0-3
+      - ./data:/data/db
 
   transfer_app:
     build: transfer_app
@@ -90,11 +60,9 @@ services:
       - "5000:5000"
     environment:
       - BOOTSTRAP_SERVERS=${KAFKA_INTERNAL_SERVER}
-      - MONGO_HOST=${MONGO_HOSTNAMES}
-      - MONGO_PORT=${MONGODB_PORT1}
+      - MONGO_HOST=${MONGO_HOSTNAME}
+      - MONGO_PORT=${MONGO_PORT}
     depends_on:
       - rest
-      - mongo-rs0-1
-      - mongo-rs0-2
-      - mongo-rs0-3
+      - mongo
       - kafka
