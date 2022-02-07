@@ -17,7 +17,7 @@ mongo_client = pymongo.MongoClient(host=MONGO_HOST, port=MONGO_PORT)
 def init_logger():
     global logger
     Log_Format = "%(levelname)s %(asctime)s - %(message)s"
-    logging.basicConfig(stream=sys.stdout, filemode="w", format=Log_Format, level=logging.ERROR)
+    logging.basicConfig(stream=sys.stdout, filemode="w", format=Log_Format, level=logging.INFO)
     return logging.getLogger()
 
 
@@ -27,7 +27,7 @@ logger = init_logger()
 def register_kafka_listener(topic, listener):
     def poll(retry_counter):
         try:
-            consumer = KafkaConsumer(topic, bootstrap_servers=BOOTSTRAP_SERVERS)
+            consumer = KafkaConsumer(topic, bootstrap_servers=BOOTSTRAP_SERVERS, group_id="transfer_app")
             consumer.poll(6000)
             logger.info("Started listening to topic: {}".format(topic))
             for msg in consumer:
