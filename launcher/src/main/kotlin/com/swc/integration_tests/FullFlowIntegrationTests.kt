@@ -148,9 +148,19 @@ internal class FullFlowIntegrationTests @Autowired constructor(
         Assertions.assertTrue(exists)
     }
 
-
     @ParameterizedTest
     @Order(5)
+    @ValueSource(strings = ["test1", "test2"])
+    fun `Test are users written in database`(username: String) {
+        val database: MongoDatabase = mongoClient.getDatabase("test")
+        val collection: MongoCollection<Document> = database.getCollection("users")
+        val users = collection.find(eq("username", username)).toList()
+
+        Assertions.assertEquals(1, users.size)
+    }
+
+    @ParameterizedTest
+    @Order(6)
     @CsvSource(
         "test1, test2",
         "test2, test1"
