@@ -45,6 +45,7 @@ class ZookeeperService : KubernetesDeployment() {
             try {
                 curatorFramework.blockUntilConnected(2, TimeUnit.SECONDS)
                 if (curatorFramework.zookeeperClient.isConnected) {
+                    curatorFramework.close()
                     return true
                 }
             } catch (ignored: InterruptedException) {
