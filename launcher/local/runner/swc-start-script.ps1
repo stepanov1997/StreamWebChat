@@ -28,7 +28,7 @@ if ($keepPodsAlive -eq 0 )
 # Directories initialisation
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
-$ROOT_PATH = (get-item $dir ).parent.parent.FullName
+$ROOT_PATH = (get-item $dir ).parent.parent.parent.FullName
 
 # Maven clean install
 Set-Location $ROOT_PATH\kubernetes-runner-library\
@@ -39,11 +39,11 @@ mvn clean install
 # Docker build, tag and push on registry
 if ($debugExists -gt 0 )
 {
-    $Dockerfile = "Dockerfile-runner-debug"
+    $Dockerfile = "local/runner/Dockerfile-runner-debug"
 }
 else
 {
-    $Dockerfile = "Dockerfile-runner"
+    $Dockerfile = "local/runner/Dockerfile-runner"
 }
 docker build -t swc-runner:latest -f ${Dockerfile} .
 docker tag swc-runner:latest localhost:5000/swc-runner:latest
@@ -52,10 +52,10 @@ docker push localhost:5000/swc-runner:latest
 # Applying docker image on Kubernetes cluster
 if ($debugExists -gt 0 )
 {
-    kubectl apply -f "local/runner-debug.yaml"
+    kubectl apply -f "local/runner/runner-debug.yaml"
 }
 else
 {
-    kubectl apply -f "local/runner-job.yaml"
+    kubectl apply -f "local/runner/runner-job.yaml"
 }
 Set-Location $dir

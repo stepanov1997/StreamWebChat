@@ -28,7 +28,7 @@ if ($keepPodsAlive -eq 0 )
 # Directories initialisation
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
-$ROOT_PATH = (get-item $dir ).parent.parent.FullName
+$ROOT_PATH = (get-item $dir ).parent.parent.parent.FullName
 
 # Maven clean install
 Set-Location $ROOT_PATH\kubernetes-runner-library\
@@ -39,11 +39,11 @@ mvn clean install
 # Docker build, tag and push on registry
 if ($debugExists -gt 0 )
 {
-    $Dockerfile = "Dockerfile-it-runner-debug"
+    $Dockerfile = "local/it-runner/Dockerfile-it-runner-debug"
 }
 else
 {
-    $Dockerfile = "Dockerfile-it-runner"
+    $Dockerfile = "local/it-runner/Dockerfile-it-runner"
 }
 docker build -t integration-tests:latest -f ${Dockerfile} .
 docker tag integration-tests:latest localhost:5000/integration-tests:latest
@@ -52,10 +52,10 @@ docker push localhost:5000/integration-tests:latest
 # Applying docker image on Kubernetes cluster
 if ($debugExists -gt 0 )
 {
-    kubectl apply -f "local/integration-tests-debug.yaml"
+    kubectl apply -f "local/it-runner/integration-tests-debug.yaml"
 }
 else
 {
-    kubectl apply -f "local/integration-tests-job.yaml"
+    kubectl apply -f "local/it-runner/integration-tests-job.yaml"
 }
 Set-Location $dir
