@@ -10,6 +10,7 @@ export default function Messenger(props) {
     const [messages, setMessages] = useState([])
 
     const currentUser = props.currentUser
+    let events;
 
     useEffect(() => {
         if (currentUser !== undefined
@@ -17,7 +18,13 @@ export default function Messenger(props) {
             && actualConversationUser !== undefined
             && actualConversationUser.username !== undefined
         ) {
-            const events = new EventSource(`${config.root_url}/chat/${currentUser.username}/${actualConversationUser.username}`);
+            setMessages([]);
+            if(events!==undefined){
+                events.unsubscribe();
+                events.close();
+            }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            events = new EventSource(`${config.root_url}/chat/${currentUser.username}/${actualConversationUser.username}`);
             events.onmessage = e => {
                 const message = JSON.parse(e.data);
                 setLastMessage(message.text);

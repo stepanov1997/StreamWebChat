@@ -10,9 +10,14 @@ import './ConversationList.css';
 
 export default function ConversationList(props) {
     const [conversations, setConversations] = useState([]);
+
     useEffect(() => {
-        getConversations()
-    }, [])
+        getConversations();
+        const interval = setInterval(() => {
+            getConversations()
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const getConversations = () => {
         axios.get(`${config.root_url}/chat/conversations/${props.currentUser.username}`).then(response => {
