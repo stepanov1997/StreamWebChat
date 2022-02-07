@@ -1,31 +1,15 @@
-transferapp:
-  url: http://localhost:5000
-kafka:
-  server: localhost:9092
 spring:
   profiles:
     active: development
   kafka:
     producer:
-      bootstrap-servers: ${kafka.server}
+      bootstrap-servers: ${KAFKA_SERVER}
     consumer:
-      bootstrap-servers: ${kafka.server}
-      auto-offset-reset: earliest
+      bootstrap-servers: ${KAFKA_SERVER}
+      auto-offset-reset: latest
       group-id: kotlin-rest
-      group:
-        max:
-          session:
-            timeout:
-              ms: 2100000000
-      max:
-        poll:
-          interval:
-            ms: 1900000000
-      request:
-        timeout:
-          ms: 1900000000
       enable-auto-commit: true
-    bootstrap-servers: ${kafka.server}
+    bootstrap-servers: ${KAFKA_SERVER}
   data:
     mongodb:
       uri: mongodb://localhost:27017/test

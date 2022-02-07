@@ -15,13 +15,13 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
+import org.springframework.test.annotation.DirtiesContext
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kafka.receiver.ReceiverOptions
@@ -33,6 +33,7 @@ import java.util.stream.Stream
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode= DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ExtendWith(MockitoExtension::class)
 class TestChatService(
     @Mock val userRepository: UserRepository,
@@ -47,6 +48,10 @@ class TestChatService(
     @BeforeEach
     fun setUp() {
         chatService = spy(ChatService(ReceiverOptions.create(), SenderOptions.create(), Gson(), userRepository, chatRepository))
+        Mockito.reset(userRepository);
+        Mockito.reset(chatRepository);
+        Mockito.reset(reactiveKafkaConsumerTemplate);
+        Mockito.reset(reactiveKafkaProducerTemplate);
     }
 
     @ParameterizedTest
@@ -59,8 +64,9 @@ class TestChatService(
         whenever(chatRepository.findAll()).thenReturn(messages.toList())
         val oldMessages = chatService.retrieveOldMessages(sender, receiver)
         val array = oldMessages.collectList().block()?.toTypedArray()
-        Assertions.assertArrayEquals(expected.toTypedArray(), array)
 
+        verify(chatRepository,  Mockito.times(1)).findAll()
+        Assertions.assertArrayEquals(expected.toTypedArray(), array)
     }
 
     @ParameterizedTest
@@ -76,9 +82,11 @@ class TestChatService(
         lenient().doReturn(reactiveKafkaConsumerTemplate)
             .`when`(chatService)
             .createReactiveKafkaConsumerTemplate(anyOrNull())
-        val newMessages =
-            chatService.retrieveNewMessages("any()", sender, receiver)
+        val newMessages = chatService.retrieveNewMessages("any()", sender, receiver)
         val array = newMessages.collectList().block()?.toTypedArray()
+
+        verify(reactiveKafkaConsumerTemplate,  Mockito.times(1)).receiveAutoAck()
+        verify(chatService, Mockito.times(1)).createReactiveKafkaConsumerTemplate(anyOrNull())
         Assertions.assertArrayEquals(expected.toTypedArray(), array)
     }
 
@@ -98,11 +106,14 @@ class TestChatService(
 
         val allServerSendEvent = chatService.getMessages(sender, receiver, "any()")
         val array = allServerSendEvent.collectList().block()?.toTypedArray()
+
+        verify(chatService, Mockito.times(1)).retrieveOldMessages(anyOrNull(), anyOrNull())
+        verify(chatService, Mockito.times(1)).retrieveNewMessages(anyOrNull(), anyOrNull(), anyOrNull())
         Assertions.assertArrayEquals((messages+messages).toTypedArray(), array?.map { it.data() }?.toTypedArray())
     }
 
     @Test
-    fun `Test sendMessage method`() {
+    fun `Test sendMessage method - successful`() {
         lenient().doReturn(reactiveKafkaProducerTemplate)
             .whenever(chatService)
             .createReactiveKafkaProducerTemplate()
@@ -113,15 +124,25 @@ class TestChatService(
         val message = Message("any()", "any()", "any()", System.currentTimeMillis())
         val actual = chatService.sendMessage(message)
 
+        verify(reactiveKafkaProducerTemplate, Mockito.times(1)).send(anyOrNull(), anyOrNull(), anyOrNull())
         Assertions.assertEquals(message, actual)
+    }
 
+    @Test
+    fun `Test sendMessage method - throws exception`() {
+        lenient().doReturn(reactiveKafkaProducerTemplate)
+            .whenever(chatService)
+            .createReactiveKafkaProducerTemplate()
 
         whenever(reactiveKafkaProducerTemplate.send(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
             Mono.error(RuntimeException())
         )
-        val actual2 = chatService.sendMessage(message)
 
-        Assertions.assertNull(actual2)
+        val message = Message("any()", "any()", "any()", System.currentTimeMillis())
+        val actual = chatService.sendMessage(message)
+
+        verify(reactiveKafkaProducerTemplate,  Mockito.times(1)).send(anyOrNull(), anyOrNull(), anyOrNull())
+        Assertions.assertNull(actual)
     }
 
     @ParameterizedTest
@@ -138,6 +159,9 @@ class TestChatService(
             Message("user2", "user3", "text3",  System.currentTimeMillis()+200)
         ))
         val conversationList = chatService.getConversationsForUser(username)
+
+        verify(userRepository, Mockito.times(1)).findAll()
+        verify(chatRepository, Mockito.times(2)).findAll()
         conversationList.forEachIndexed { index, map ->
             Assertions.assertEquals(expected[index]["userId"], map["userId"])
             Assertions.assertEquals(expected[index]["username"], map["username"])

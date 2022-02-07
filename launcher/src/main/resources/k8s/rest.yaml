@@ -40,14 +40,14 @@ metadata:
 spec:
   selector:
     swc.service: rest
-#  type: NodePort
-  type: ClusterIP
+  type: NodePort
+#  type: ClusterIP
   ports:
     - name: "8080"
       port: 8080
       targetPort: 8080
-#      nodePort: 30080
+      nodePort: 30080
     - name: "5005"
       port: 5005
       targetPort: 5005
-#      nodePort: 30005
+      nodePort: 30005

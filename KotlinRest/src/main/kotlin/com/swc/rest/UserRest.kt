@@ -52,18 +52,6 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
         val user = userService.login(username, password) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(user);
     }
-
-//    @PostMapping("logout")
-//    fun logout() = ResponseEntity.ok(userService.logout())
-
-    @GetMapping("current")
-    fun currentUser() = if (userService.currentUser == null) ResponseEntity.notFound().build() else ResponseEntity.ok(
-        userService.currentUser?.username
-    )
-
-//    @PostMapping("imAlive")
-//    fun imAliveSignal() = ResponseEntity.ok(userService.imAliveSignal())
-
 }
 
 

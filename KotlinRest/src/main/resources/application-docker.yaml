@@ -1,7 +1,0 @@
-kafka:
-  server: kafka:9092
-spring:
-  data:
-    mongodb:
-      host: mongodb
-      port: 27017

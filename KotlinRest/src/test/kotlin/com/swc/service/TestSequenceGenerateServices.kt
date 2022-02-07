@@ -6,9 +6,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.mongodb.core.MongoOperations
 
@@ -28,7 +30,9 @@ class TestSequenceGenerateServices(
         whenever(mongoOperations.findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))).thenReturn(DatabaseSequence("3",4L))
         val sequenceGenerateServices = SequenceGenerateServices(mongoOperations)
         val generateSequence = sequenceGenerateServices.generateSequence("12")
-        Assertions.assertEquals(generateSequence, 4L)
+
+        verify(mongoOperations, Mockito.times(1)).findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))
+        Assertions.assertEquals(4L, generateSequence)
     }
 
     @Test
@@ -36,6 +40,8 @@ class TestSequenceGenerateServices(
         whenever(mongoOperations.findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))).thenReturn(null)
         val sequenceGenerateServices = SequenceGenerateServices(mongoOperations)
         val generateSequence = sequenceGenerateServices.generateSequence("12")
-        Assertions.assertEquals(generateSequence, 1L)
+
+        verify(mongoOperations, Mockito.times(1)).findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))
+        Assertions.assertEquals(1L, generateSequence)
     }
 }

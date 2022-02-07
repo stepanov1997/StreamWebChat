@@ -37,36 +37,36 @@ class TestUserService(
 
     @Test
     fun `Test addUser method - username exists`() {
-        whenever(userRepository.containsByUsername(ArgumentMatchers.anyString())).thenReturn(true)
         val u = User(1, "test", "test", true, "test", "test")
+        whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(listOf(u))
         val addUser = userService.addUser(u)
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(0)).insert(eq(u))
         assertNull(addUser)
     }
 
     @Test
     fun `Test addUser method - insert successful`() {
-        whenever(userRepository.containsByUsername(any())).thenReturn(false)
         val u = User(1, "test", "test", true, "test", "test")
+        whenever(userRepository.findByUsername(any())).thenReturn(listOf())
         whenever(userRepository.insert(eq(u))).thenReturn(u)
         val addUser = userService.addUser(u)
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(1)).insert(eq(u))
         assertEquals(u, addUser)
     }
 
     @Test
     fun `Test addUser method - insert unsuccessful`() {
-        whenever(userRepository.containsByUsername(any())).thenReturn(false)
         val u = User(1, "test", "test", true, "test", "test")
+        whenever(userRepository.findByUsername(any())).thenReturn(listOf(u))
         whenever(userRepository.insert(eq(u))).thenReturn(null)
         val addUser = userService.addUser(u)
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
-        verify(userRepository, Mockito.times(1)).insert(eq(u))
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
+        verify(userRepository, Mockito.times(0)).insert(eq(u))
         assertNull(addUser)
     }
 
@@ -104,30 +104,28 @@ class TestUserService(
 
     @Test
     fun `Test login method - username doesn't exists`() {
-        whenever(userRepository.containsByUsername(ArgumentMatchers.anyString())).thenReturn(false)
+        val u = User(1, "test", "test", true, "test", "test")
+        whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(listOf())
         val userModel = userService.login("test", "test")
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
         assertNull(userModel)
     }
 
     @Test
     fun `Test login method - wrong password`() {
-        whenever(userRepository.containsByUsername(ArgumentMatchers.anyString())).thenReturn(true)
         whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(listOf(
             User(1, "test", "test2", true, "test", "test"),
             User(2, "test2", "test2", true, "test2", "test2")
         ))
         val userModel = userService.login("test", "test")
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
         verify(userRepository, Mockito.times(1)).findByUsername(any())
         assertNull(userModel)
     }
 
     @Test
     fun `Test login method - saving with error`() {
-        whenever(userRepository.containsByUsername(ArgumentMatchers.anyString())).thenReturn(true)
         whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(listOf(
             User(1, "test", "test", true, "test", "test"),
             User(2, "test2", "test2", true, "test2", "test2")
@@ -135,14 +133,12 @@ class TestUserService(
         whenever(userRepository.save(ArgumentMatchers.any(User::class.java))).thenThrow(RuntimeException())
 
         Assertions.assertThrows(RuntimeException::class.java) { userService.login("test", "test") }
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
         verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(1)).save(any())
     }
 
     @Test
     fun `Test login method - saving successful`() {
-        whenever(userRepository.containsByUsername(ArgumentMatchers.anyString())).thenReturn(true)
         whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(listOf(
             User(1, "test", "test", true, "test", "test"),
             User(2, "test2", "test2", true, "test2", "test2")
@@ -151,7 +147,6 @@ class TestUserService(
 
         val user = userService.login("test", "test")
 
-        verify(userRepository, Mockito.times(1)).containsByUsername(any())
         verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(1)).save(any())
         assertNotNull(user)

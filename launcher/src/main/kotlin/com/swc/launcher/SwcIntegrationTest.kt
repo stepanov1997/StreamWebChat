@@ -15,8 +15,7 @@ import org.springframework.test.context.ContextConfiguration
     KafkaService::class,
     MongoService::class,
     TransferAppService::class,
-    KotlinRestService::class,
-    ReactClientService::class
+    KotlinRestService::class
 ])
 @SpringBootTest
 @Component
