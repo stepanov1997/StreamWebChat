@@ -61,6 +61,7 @@ class ChatService(
             .doOnSuccess {
                 println("Message sent to Kafka ${message?.text} at ${message?.timestamp}")
             }.doOnError {
+                println("Error sending message to Kafka ${message?.text} at ${message?.timestamp}")
                 returnMessage = null
             }
             .subscribe()

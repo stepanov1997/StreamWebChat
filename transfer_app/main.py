@@ -25,24 +25,21 @@ logger = init_logger()
 
 
 def register_kafka_listener(topic, listener):
-    def poll(retry_counter):
-        try:
-            consumer = KafkaConsumer(topic, bootstrap_servers=BOOTSTRAP_SERVERS, group_id="transfer_app")
-            consumer.poll(6000)
-            logger.info("Started listening to topic: {}".format(topic))
-            for msg in consumer:
-                t2 = threading.Thread(target=listener, args=(msg.value.decode("utf-8"),))
-                t2.start()
-                retry_counter = 0
-        except Exception as e:
-            logger.error("Error while listening to topic: {}".format(topic))
-            logger.error(e)
-            time.sleep(5)
-            if retry_counter < 4:
-                poll(retry_counter + 1)
+    def poll():
+       while True:
+           try:
+               consumer = KafkaConsumer(topic, bootstrap_servers=BOOTSTRAP_SERVERS, group_id="transfer_app")
+               consumer.poll(6000)
+               logger.info("Started listening to topic: {}".format(topic))
+               for msg in consumer:
+                   t2 = threading.Thread(target=listener, args=(msg.value.decode("utf-8"),))
+                   t2.start()
+           except Exception as e:
+               time.sleep(5)
+               logger.error("Error while listening to topic: {}".format(topic))
 
     logger.info("About to register listener to topic: %s", topic)
-    t1 = threading.Thread(target=poll, args=(0,))
+    t1 = threading.Thread(target=poll)
     t1.start()
 
 
