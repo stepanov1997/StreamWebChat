@@ -1,14 +1,9 @@
 package com.swc.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
 import org.jetbrains.annotations.NotNull
-import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.repository.MongoRepository
-import java.util.*
-import java.util.stream.Stream
 
 
 @Document(collection = "messages")

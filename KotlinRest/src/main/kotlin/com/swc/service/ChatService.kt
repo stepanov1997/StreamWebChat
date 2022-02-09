@@ -4,20 +4,28 @@ import com.google.gson.Gson
 import com.swc.model.Message
 import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.http.codec.ServerSentEvent
-import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
-import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
+import reactor.kafka.receiver.internals.ConsumerFactory
+import reactor.kafka.receiver.internals.DefaultKafkaReceiver
+import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
+import reactor.kafka.sender.SenderRecord
+import reactor.kafka.sender.internals.DefaultKafkaSender
+import reactor.kafka.sender.internals.ProducerFactory
 import java.io.Serializable
 import java.util.*
 
 
 @Service
 class ChatService(
-    val receiverOptions: ReceiverOptions<String, String>,
+    val receiverOptions : ReceiverOptions<String, String>,
     val senderOptions: SenderOptions<String, String>,
     val gson: Gson,
     val userRepository: UserRepository,
@@ -32,40 +40,44 @@ class ChatService(
                     it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
                     it.senderUsername == receiverUsername && it.receiverUsername == senderUsername
                 }.stream()
-        }
+        }.checkpoint("Messages from database are started being consumed")
 
-    fun getMessages(senderUsername: String, receiverUsername: String, groupId: String): Flux<ServerSentEvent<Message>> =
+    fun getMessages(senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> =
         Flux.concat(
             retrieveOldMessages(senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace),
-            retrieveNewMessages(groupId, senderUsername, receiverUsername)
+            retrieveNewMessages(senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace)
         )
 
-    fun retrieveNewMessages(groupId: String, senderUsername: String, receiverUsername: String) =
-        this.createReactiveKafkaConsumerTemplate(groupId)
-            .receiveAutoAck()
+    fun retrieveNewMessages(senderUsername: String, receiverUsername: String) =
+        createKafkaReceiver("rest-consumer-${UUID.randomUUID()}", receiverOptions)
+            .receive()
+            .checkpoint("Messages are started being consumed")
+            .log()
             .map { gson.fromJson(it.value(), Message::class.java) }
+            .checkpoint("Messages are done consumed")
             .filter {
                 it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
                 it.senderUsername == receiverUsername && it.receiverUsername == senderUsername
             }
 
     fun sendMessage(message: Message?): Message? {
-        var returnMessage = message
-        val json = gson.toJson(message)
-        val producer = createReactiveKafkaProducerTemplate()
-        producer.send("messages", Objects.hash(json).toString(), json)
-            .doOnSuccess {
-                println("Message sent to Kafka ${message?.text} at ${message?.timestamp}")
-            }.doOnError {
-                println("Error sending message to Kafka ${message?.text} at ${message?.timestamp}")
-                returnMessage = null
-            }
-            .subscribe()
-        return returnMessage
+        val json = gson.toJson(message);
+        return try {
+            createKafkaSender(senderOptions)
+                .send(
+                    Mono.just(SenderRecord.create(ProducerRecord<String, String>("messages", json), json))
+                        .doOnError{ println("Send failed") }
+                )
+                .blockLast()
+            message
+        }catch (e: Exception){
+            println("Send failed")
+            null
+        }
     }
 
     fun getConversationsForUser(username: String): List<Map<String, Serializable>> {
@@ -95,8 +107,12 @@ class ChatService(
             .toList()
     }
 
-    fun createReactiveKafkaConsumerTemplate(groupId: String): ReactiveKafkaConsumerTemplate<String, String> =
-       ReactiveKafkaConsumerTemplate(receiverOptions.consumerProperty("group.id", groupId))
+    fun createKafkaReceiver(groupId: String, receiverOptions: ReceiverOptions<String, String>): KafkaReceiver<String, String> {
+        return DefaultKafkaReceiver(ConsumerFactory.INSTANCE, receiverOptions
+            .consumerProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId))
+    }
 
-    fun createReactiveKafkaProducerTemplate() = ReactiveKafkaProducerTemplate(senderOptions)
+    fun createKafkaSender(senderOptions: SenderOptions<String, String>): KafkaSender<String, String> {
+        return DefaultKafkaSender(ProducerFactory.INSTANCE, senderOptions)
+    }
 }

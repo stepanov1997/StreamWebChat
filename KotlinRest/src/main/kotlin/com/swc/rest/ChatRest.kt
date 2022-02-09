@@ -10,7 +10,6 @@ import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import java.io.Serializable
-import java.util.*
 
 @RestController
 @RequestMapping("chat")
@@ -26,8 +25,7 @@ class ChatRest(
         @PathVariable senderUsername: String,
         @PathVariable receiverUsername: String
     ): Flux<ServerSentEvent<Message>> {
-        val groupId = Objects.hash(senderUsername, receiverUsername).toString()
-        return chatService.getMessages(senderUsername, receiverUsername, groupId)
+        return chatService.getMessages(senderUsername, receiverUsername)
     }
 
     @PostMapping

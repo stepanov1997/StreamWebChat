@@ -4,7 +4,6 @@ import com.swc.model.User
 import com.swc.model.UserUserModel
 import com.swc.service.SequenceGenerateServices
 import com.swc.service.UserService
-import org.springframework.boot.context.properties.bind.Bindable.mapOf
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,7 +11,6 @@ import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 @RestController
 @RequestMapping("user")

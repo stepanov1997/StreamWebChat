@@ -18,13 +18,16 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.*
-import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
-import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.test.annotation.DirtiesContext
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
+import reactor.kafka.receiver.ReceiverRecord
+import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
 import reactor.kotlin.core.publisher.toFlux
 import java.io.Serializable
@@ -38,8 +41,8 @@ import java.util.stream.Stream
 class TestChatService(
     @Mock val userRepository: UserRepository,
     @Mock val chatRepository: ChatRepository,
-    @Mock val reactiveKafkaConsumerTemplate: ReactiveKafkaConsumerTemplate<String, String>,
-    @Mock val reactiveKafkaProducerTemplate: ReactiveKafkaProducerTemplate<String, String>
+    @Mock val kafkaSender: KafkaSender<String, String>,
+    @Mock val kafkaReceiver: KafkaReceiver<String, String>
 ) {
 
     private var gson: Gson = Gson()
@@ -50,8 +53,8 @@ class TestChatService(
         chatService = spy(ChatService(ReceiverOptions.create(), SenderOptions.create(), Gson(), userRepository, chatRepository))
         Mockito.reset(userRepository);
         Mockito.reset(chatRepository);
-        Mockito.reset(reactiveKafkaConsumerTemplate);
-        Mockito.reset(reactiveKafkaProducerTemplate);
+        Mockito.reset(kafkaSender);
+        Mockito.reset(kafkaReceiver);
     }
 
     @ParameterizedTest
@@ -76,17 +79,17 @@ class TestChatService(
                                           receiver: String,
                                           expected: List<Message>) {
 
-        whenever(reactiveKafkaConsumerTemplate.receiveAutoAck()).thenReturn(Flux.fromIterable(messages.map {
-            ConsumerRecord("topic", 0, 0, null, gson.toJson(it))
+        whenever(kafkaReceiver.receive()).thenReturn(Flux.fromIterable(messages.map {
+            ReceiverRecord(ConsumerRecord("test", 0, 0, null, gson.toJson(it)), null)
         }))
-        lenient().doReturn(reactiveKafkaConsumerTemplate)
+        lenient().doReturn(kafkaReceiver)
             .`when`(chatService)
-            .createReactiveKafkaConsumerTemplate(anyOrNull())
-        val newMessages = chatService.retrieveNewMessages("any()", sender, receiver)
+            .createKafkaReceiver(anyOrNull(), anyOrNull())
+        val newMessages = chatService.retrieveNewMessages(sender, receiver)
         val array = newMessages.collectList().block()?.toTypedArray()
 
-        verify(reactiveKafkaConsumerTemplate,  Mockito.times(1)).receiveAutoAck()
-        verify(chatService, Mockito.times(1)).createReactiveKafkaConsumerTemplate(anyOrNull())
+        verify(kafkaReceiver,  Mockito.times(1)).receive()
+        verify(chatService, Mockito.times(1)).createKafkaReceiver(anyOrNull(), anyOrNull())
         Assertions.assertArrayEquals(expected.toTypedArray(), array)
     }
 
@@ -102,46 +105,46 @@ class TestChatService(
 
         lenient().doReturn(messages.toFlux())
             .whenever(chatService)
-            .retrieveNewMessages(anyOrNull(), anyOrNull(), anyOrNull())
+            .retrieveNewMessages(anyOrNull(), anyOrNull())
 
-        val allServerSendEvent = chatService.getMessages(sender, receiver, "any()")
+        val allServerSendEvent = chatService.getMessages(sender, receiver)
         val array = allServerSendEvent.collectList().block()?.toTypedArray()
 
         verify(chatService, Mockito.times(1)).retrieveOldMessages(anyOrNull(), anyOrNull())
-        verify(chatService, Mockito.times(1)).retrieveNewMessages(anyOrNull(), anyOrNull(), anyOrNull())
+        verify(chatService, Mockito.times(1)).retrieveNewMessages(anyOrNull(), anyOrNull())
         Assertions.assertArrayEquals((messages+messages).toTypedArray(), array?.map { it.data() }?.toTypedArray())
     }
 
     @Test
     fun `Test sendMessage method - successful`() {
-        lenient().doReturn(reactiveKafkaProducerTemplate)
+        lenient().doReturn(kafkaSender)
             .whenever(chatService)
-            .createReactiveKafkaProducerTemplate()
+            .createKafkaSender(anyOrNull())
 
-        whenever(reactiveKafkaProducerTemplate.send(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
-            Mono.empty()
+        whenever(kafkaSender.send<String>(anyOrNull())).thenReturn(
+            Flux.empty()
         )
         val message = Message("any()", "any()", "any()", System.currentTimeMillis())
         val actual = chatService.sendMessage(message)
 
-        verify(reactiveKafkaProducerTemplate, Mockito.times(1)).send(anyOrNull(), anyOrNull(), anyOrNull())
+        verify(kafkaSender, Mockito.times(1)).send<String>(anyOrNull())
         Assertions.assertEquals(message, actual)
     }
 
     @Test
     fun `Test sendMessage method - throws exception`() {
-        lenient().doReturn(reactiveKafkaProducerTemplate)
+        lenient().doReturn(kafkaSender)
             .whenever(chatService)
-            .createReactiveKafkaProducerTemplate()
+            .createKafkaSender(anyOrNull())
 
-        whenever(reactiveKafkaProducerTemplate.send(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
-            Mono.error(RuntimeException())
+        whenever(kafkaSender.send<String>(anyOrNull())).thenReturn(
+            Flux.error(RuntimeException())
         )
 
         val message = Message("any()", "any()", "any()", System.currentTimeMillis())
         val actual = chatService.sendMessage(message)
 
-        verify(reactiveKafkaProducerTemplate,  Mockito.times(1)).send(anyOrNull(), anyOrNull(), anyOrNull())
+        verify(kafkaSender,  Mockito.times(1)).send<String>(anyOrNull())
         Assertions.assertNull(actual)
     }
 
@@ -173,8 +176,8 @@ class TestChatService(
 
     @Test
     fun `Test creation of Kafka Consumer and Producer template`() {
-        Assertions.assertNotNull(chatService.createReactiveKafkaConsumerTemplate(""))
-        Assertions.assertNotNull(chatService.createReactiveKafkaProducerTemplate())
+        Assertions.assertNotNull(chatService.createKafkaSender(SenderOptions.create()))
+        Assertions.assertNotNull(chatService.createKafkaReceiver("any()", ReceiverOptions.create()))
     }
 
     private fun provideMessages(): Stream<Arguments> =
