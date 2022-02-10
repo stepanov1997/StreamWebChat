@@ -64,21 +64,20 @@ class ChatService(
                 it.senderUsername == receiverUsername && it.receiverUsername == senderUsername
             }
 
-    fun sendMessage(message: Message?): Message? {
-        val json = gson.toJson(message);
-        return try {
+    fun sendMessage(message: Message?): Message? =
+        try {
+            val json = gson.toJson(message);
             createKafkaSender(senderOptions)
                 .send(
                     Mono.just(SenderRecord.create(ProducerRecord<String, String>("messages", json), json))
-                        .doOnError{ println("Send failed") }
+                        .doOnError { println("Send failed") }
                 )
                 .blockLast()
             message
-        }catch (e: Exception){
+        } catch (e: Exception) {
             println("Send failed")
             null
         }
-    }
 
     fun getConversationsForUser(username: String): List<Map<String, Serializable>> {
         return userRepository
