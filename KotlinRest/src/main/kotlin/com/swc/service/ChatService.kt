@@ -72,7 +72,7 @@ class ChatService(
                     Mono.just(SenderRecord.create(ProducerRecord<String, String>("messages", json), json))
                         .doOnError { println("Send failed") }
                 )
-                .blockLast()
+                .subscribe()
             message
         } catch (e: Exception) {
             println("Send failed")

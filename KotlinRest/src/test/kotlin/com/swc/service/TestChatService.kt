@@ -145,7 +145,7 @@ class TestChatService(
         val actual = chatService.sendMessage(message)
 
         verify(kafkaSender,  Mockito.times(1)).send<String>(anyOrNull())
-        Assertions.assertNull(actual)
+        Assertions.assertNotNull(actual)
     }
 
     @ParameterizedTest
