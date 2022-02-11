@@ -69,13 +69,13 @@ class ChatService(
             val json = gson.toJson(message);
             createKafkaSender(senderOptions)
                 .send(
-                    Mono.just(SenderRecord.create(ProducerRecord<String, String>("messages", json), json))
-                        .doOnError { println("Send failed") }
+                    Mono.just(SenderRecord.create(ProducerRecord<String, String>("messages", json), null))
+                        .doOnError { it.printStackTrace() }
                 )
                 .subscribe()
             message
         } catch (e: Exception) {
-            println("Send failed")
+            e.printStackTrace()
             null
         }
 

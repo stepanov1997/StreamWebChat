@@ -48,7 +48,7 @@ class KafkaTools(consumerFactory: ConsumerFactory<String, String>) :
 
     @Throws(InterruptedException::class)
     fun readRecord(topic: String): String? {
-        val expiration = LocalDateTime.now().plus(Duration.ofSeconds(3))
+        val expiration = LocalDateTime.now().plus(Duration.ofSeconds(15))
         while (LocalDateTime.now().isBefore(expiration)) {
             val topicData = records[topic]
             if (topicData != null) {
