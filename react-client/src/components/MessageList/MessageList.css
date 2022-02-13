@@ -1,3 +1,10 @@
 .message-list-container {
     padding: 10px 10px 70px;
 }
+
+.show-more-icon {
+    margin-top: 10px;
+    transform: rotate(180deg);
+    width: 30px;
+    height: 30px;
+}

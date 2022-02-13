@@ -28,10 +28,14 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
 
     @PostMapping("register")
     fun register(@RequestBody requestBody: HashMap<String, String>): ResponseEntity<User> {
+        val name = requestBody["name"] ?: return ResponseEntity.badRequest().build()
+        val surname = requestBody["surname"] ?: return ResponseEntity.badRequest().build()
         val username = requestBody["username"] ?: return ResponseEntity.badRequest().build()
         val password = requestBody["password"] ?: return ResponseEntity.badRequest().build()
         val user = User(
             sequenceGenerateServices.generateSequence("users_sequence").toInt(),
+            name,
+            surname,
             username,
             password,
             false,

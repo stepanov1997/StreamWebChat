@@ -5,6 +5,26 @@
     width: 100%;
 }
 
+.current-user {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+}
+
+.conversation-list-item-selected {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    background-color: hsl(202, 60%, 70%);
+    color: white;
+}
+
+.conversation-list-item-selected p {
+    color: white;
+}
+
 .conversation-list-item:hover {
     background: #eeeef1;
     cursor: pointer;

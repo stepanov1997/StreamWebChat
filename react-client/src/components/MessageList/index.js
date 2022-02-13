@@ -1,19 +1,45 @@
+/* eslint-disable */
 import React, {useEffect, useState} from 'react';
 import Compose from '../Compose';
 import Toolbar from '../Toolbar';
-import ToolbarButton from '../ToolbarButton';
 import Message from '../Message';
 import moment from 'moment';
 
 import './MessageList.css';
 import config from "../../assets/config.json";
+import showMoreIcon from "../../assets/show-more-icon.png";
+
 
 
 export default function MessageList(props) {
 
-    const {messages, setMessages, currentUser, actualConversationUser} = props;
+    const [counter, setCounter] = useState(1);
+    const [loadMoreButtonHidden, setLoadMoreButtonHidden] = useState(false);
 
+    const {messages, setMessages, currentUser, actualConversationUser} = props;
     const MY_USERNAME = currentUser;
+
+    const loadMore = async () => {
+        const url = `${config.root_url}/chat/old/${currentUser}/${actualConversationUser.username}?` + new URLSearchParams({
+            page: counter,
+            size: 10
+        });
+        const response = await fetch(url, {})
+        const oldMessages = await response.json()
+        if(oldMessages.length===0){
+            setLoadMoreButtonHidden(true);
+            return;
+        }
+        setMessages(oldMessages.map(message => ({
+                author: message.senderUsername,
+                message: message.text,
+                timestamp: message.timestamp
+            })).concat(messages).map((m, index) => {
+                m.id = index;
+                return m;
+            }))
+        setCounter(counter + 1)
+    }
 
     const renderMessages = () => {
         let i = 0;
@@ -95,14 +121,7 @@ export default function MessageList(props) {
 
     return (
         <div className="message-list">
-            <Toolbar
-                title={actualConversationUser.username}
-                rightItems={[
-                    <ToolbarButton key="info" icon="ion-ios-information-circle-outline"/>,
-                    <ToolbarButton key="video" icon="ion-ios-videocam"/>,
-                    <ToolbarButton key="phone" icon="ion-ios-call"/>
-                ]}
-            />
+            <img src={showMoreIcon} className={"show-more-icon"} hidden={loadMoreButtonHidden} alt="Show more" onClick={loadMore}/>
 
             <div className="message-list-container">{renderMessages()}</div>
 

@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react'
-import {Button, Form, FormGroup, Label, Input, NavLink, Alert} from 'reactstrap';
+import {Button, Form, FormGroup, Label, Input, NavLink} from 'reactstrap';
 import config from '../../assets/config.json'
 import './register-form.css'
 import {useHistory} from 'react-router-dom';
 import {useForm} from "react-hook-form";
 
 export const RegisterForm = props => {
-    const {register, handleSubmit, setValue, getValues} = useForm();
+    const {register, setValue, getValues} = useForm();
     const [errorMessage, setErrorMessage] = useState("");
     const history = useHistory();
 
@@ -21,7 +21,12 @@ export const RegisterForm = props => {
             } else {
                 setErrorMessage("")
             }
-            const obj = {username: getValues().username, password: getValues().password}
+            const obj = {
+                name: getValues().name,
+                surname: getValues().surname,
+                username: getValues().username,
+                password: getValues().password
+            }
             console.log(obj)
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
@@ -53,9 +58,10 @@ export const RegisterForm = props => {
         }
     }
     useEffect(() => {
+        register("name");
+        register("surname");
         register("username");
         register("password");
-        register("email");
     }, [register]);
     const handleChange = (event, name) => {
         setValue(name, event.target.value);
@@ -68,6 +74,18 @@ export const RegisterForm = props => {
             <hr/>
             <div className={'register-container'}>
                 <Form method='POST' onSubmit={onSubmit}>
+                    <FormGroup className={"mt-4"}>
+                        <Label for="name">Name: </Label>
+                        <Input type="name" onChange={e => handleChange(e, 'name')}
+                               className={".message .bubble-container .bubble"}
+                               name="name" id="name" placeholder="Enter name" value={props.name}/>
+                    </FormGroup>
+                    <FormGroup className={"mt-1"}>
+                        <Label for="surname">Surname: </Label>
+                        <Input type="surname" onChange={e => handleChange(e, 'surname')}
+                               className={".message .bubble-container .bubble"}
+                               name="surname" id="surname" placeholder="Enter surname" value={props.surname}/>
+                    </FormGroup>
                     <FormGroup className={"mt-5"}>
                         <Label for="username">Username: </Label>
                         <Input type="username" onChange={e => handleChange(e, 'username')}

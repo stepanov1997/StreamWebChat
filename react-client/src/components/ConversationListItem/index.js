@@ -9,16 +9,19 @@ export default function ConversationListItem(props) {
         shave('.conversation-snippet', 200);
     })
 
-    const {userId, username, isOnline, exists, timestamp, lastMessage} = props.data;
+    const capitalize = (str) => str?.charAt(0)?.toUpperCase() + str?.substring(1);
+
+    const {name, surname, username, isOnline, exists, timestamp, lastMessage} = props.data;
+    const isSelected = username === props.actualConversationUser.username ? "-selected" : ""
 
     return (
-        <div className="conversation-list-item" onClick={_ => props.setActualConversationUser(props.data)}>
+        <div className={`conversation-list-item${isSelected}`} onClick={_ => props.setActualConversationUser(props.data)}>
             <img className="conversation-photo"
                  src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation"/>
             <div className="conversation-info">
-                <h1 className="conversation-title">{username} {isOnline ? ("🟢") : ("⚪")}</h1>
+                <h1 className="conversation-title">{capitalize(name)} {capitalize(surname)} {isOnline ? ("🟢") : ("⚪")}</h1>
                 {exists &&
-                    <p className="conversation-snippet">{lastMessage} ({moment(timestamp).lang("bs").fromNow()})</p>}
+                    <p className="conversation-snippet">{lastMessage} ({moment(timestamp).locale("bs").fromNow()})</p>}
             </div>
         </div>
     );

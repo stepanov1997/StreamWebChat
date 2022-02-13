@@ -4,12 +4,16 @@ import com.swc.model.Message
 import com.swc.repository.UserRepository
 import com.swc.service.ChatService
 import com.swc.service.SequenceGenerateServices
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import java.io.Serializable
+
 
 @RestController
 @RequestMapping("chat")
@@ -22,10 +26,24 @@ class ChatRest(
 
     @GetMapping("/{senderUsername}/{receiverUsername}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun getMessages(
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "10") size: Int,
         @PathVariable senderUsername: String,
         @PathVariable receiverUsername: String
     ): Flux<ServerSentEvent<Message>> {
-        return chatService.getMessages(senderUsername, receiverUsername)
+        val pageable: Pageable = PageRequest.of(page, size, Sort.by("timestamp").descending())
+        return chatService.getMessages(pageable, senderUsername, receiverUsername)
+    }
+
+    @GetMapping("/old/{senderUsername}/{receiverUsername}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun getOldMessages(
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "10") size: Int,
+        @PathVariable senderUsername: String,
+        @PathVariable receiverUsername: String
+    ): Flux<Message> {
+        val pageable: Pageable = PageRequest.of(page, size, Sort.by("timestamp").descending())
+        return chatService.retrieveOldMessages(pageable, senderUsername, receiverUsername)
     }
 
     @PostMapping

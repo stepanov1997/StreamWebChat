@@ -4,6 +4,17 @@ import MessageList from '../MessageList';
 import './Messenger.css';
 import config from '../../assets/config.json'
 
+function MyProfile(props) {
+    return (<div className={`current-user`}>
+        <img className="conversation-photo"
+             src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation"/>
+        <div className="conversation-info">
+            <h1 className="conversation-title">{props.currentUser.username}</h1>
+        </div>
+    </div>)
+}
+
+MyProfile.propTypes = {};
 export default function Messenger(props) {
     const [actualConversationUser, setActualConversationUser] = useState({})
     const [lastMessage, setLastMessage] = useState([])
@@ -40,8 +51,9 @@ export default function Messenger(props) {
 
     return (
         <div className="messenger">
-
             <div className="scrollable sidebar">
+                <MyProfile currentUser={currentUser}/>
+                <hr/>
                 <ConversationList currentUser={currentUser}
                                   actualConversationUser={actualConversationUser}
                                   setActualConversationUser={setActualConversationUser}

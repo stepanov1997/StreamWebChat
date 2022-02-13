@@ -1,3 +1,4 @@
+
 spring:
   profiles:
     active: development
@@ -13,3 +14,11 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/test
+logging:
+  level:
+    org:
+      apache:
+        kafka: OFF
+#      mongodb: OFF
+    reactor:
+      Flux: OFF

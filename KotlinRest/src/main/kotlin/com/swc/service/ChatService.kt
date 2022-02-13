@@ -6,6 +6,7 @@ import com.swc.repository.ChatRepository
 import com.swc.repository.UserRepository
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.ServerSentEvent
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -32,19 +33,17 @@ class ChatService(
     val chatRepository: ChatRepository
 ) {
 
-    fun retrieveOldMessages(senderUsername: String, receiverUsername: String): Flux<Message> =
+    fun retrieveOldMessages(pageable: Pageable, senderUsername: String, receiverUsername: String) =
         Flux.fromStream {
             chatRepository
-                .findAll()
-                .filter {
-                    it.senderUsername == senderUsername && it.receiverUsername == receiverUsername ||
-                    it.senderUsername == receiverUsername && it.receiverUsername == senderUsername
-                }.stream()
+                .findAllBySenderUsernameAndReceiverUsername(senderUsername, receiverUsername, pageable)
+                .reversed()
+                .stream()
         }.checkpoint("Messages from database are started being consumed")
 
-    fun getMessages(senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> =
+    fun getMessages(pageable: Pageable, senderUsername: String, receiverUsername: String): Flux<ServerSentEvent<Message>> =
         Flux.concat(
-            retrieveOldMessages(senderUsername, receiverUsername)
+            retrieveOldMessages(pageable, senderUsername, receiverUsername)
                 .map { ServerSentEvent.builder(it).build() }
                 .doOnError(Throwable::printStackTrace),
             retrieveNewMessages(senderUsername, receiverUsername)
@@ -82,6 +81,7 @@ class ChatService(
     fun getConversationsForUser(username: String): List<Map<String, Serializable>> {
         return userRepository
             .findAll()
+            .asSequence()
             .filter { username != it.username }
             .map { otherUser ->
                 Pair(
@@ -96,6 +96,8 @@ class ChatService(
             .map {
                 mapOf(
                     "userId" to it.first.id,
+                    "name" to it.first.name,
+                    "surname" to it.first.surname,
                     "username" to it.first.username,
                     "isOnline" to it.first.isOnline,
                     "exists" to (it.second != null),
@@ -103,6 +105,7 @@ class ChatService(
                     "lastMessage" to (it.second?.text ?: "")
                 )
             }
+            .sortedByDescending { it["timestamp"] as Long }
             .toList()
     }
 

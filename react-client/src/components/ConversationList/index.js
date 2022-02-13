@@ -9,6 +9,7 @@ import config from '../../assets/config.json'
 import './ConversationList.css';
 
 export default function ConversationList(props) {
+    const [firstLoad, setFirstLoad] = useState(true);
     const [conversations, setConversations] = useState([]);
 
     useEffect(() => {
@@ -17,12 +18,15 @@ export default function ConversationList(props) {
             getConversations()
         }, 3000);
         return () => clearInterval(interval);
-    }, []);
+    }, [firstLoad]);
 
     const getConversations = () => {
         axios.get(`${config.root_url}/chat/conversations/${props.currentUser.username}`).then(response => {
-            console.log(response.data)
-            setConversations([...conversations, ...response.data])
+            if(response.data.length>0 && firstLoad) {
+                setFirstLoad(false);
+                props.setActualConversationUser(response.data[0]);
+            }
+            setConversations(response.data)
         });
     }
 
@@ -41,8 +45,9 @@ export default function ConversationList(props) {
             {
                 conversations.map(conversation =>
                     <ConversationListItem
-                        key={`conversation${conversation.username}`}
+                        key={`conversation${conversation.id}`}
                         data={conversation}
+                        actualConversationUser={props.actualConversationUser}
                         setActualConversationUser={props.setActualConversationUser}
                     />
                 )
