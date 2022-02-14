@@ -43,9 +43,9 @@ export default function ConversationList(props) {
             />
             <ConversationSearch/>
             {
-                conversations.map(conversation =>
+                conversations.map((conversation, index) =>
                     <ConversationListItem
-                        key={`conversation${conversation.id}`}
+                        key={`conversation${index}`}
                         data={conversation}
                         actualConversationUser={props.actualConversationUser}
                         setActualConversationUser={props.setActualConversationUser}

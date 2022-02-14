@@ -14,11 +14,11 @@ function MyProfile(props) {
     </div>)
 }
 
-MyProfile.propTypes = {};
 export default function Messenger(props) {
     const [actualConversationUser, setActualConversationUser] = useState({})
     const [lastMessage, setLastMessage] = useState([])
     const [messages, setMessages] = useState([])
+    const [loadMoreButtonHidden, setLoadMoreButtonHidden] = useState(false);
 
     const currentUser = props.currentUser
     let events;
@@ -39,13 +39,20 @@ export default function Messenger(props) {
             events.onmessage = e => {
                 const message = JSON.parse(e.data);
                 setLastMessage(message.text);
-                setMessages(prevState => [...prevState, {
-                    id: message.id,
-                    author: message.senderUsername,
-                    message: message.text,
-                    timestamp: message.timestamp
-                }]);
+
+                let item = sessionStorage.getItem("sentMessages");
+                let sentMessages = item ? JSON.parse(item) : [];
+
+                if(!sentMessages.some(timestamp=>timestamp===message.timestamp)){
+                    setMessages(prevState => [...prevState, {
+                        id: message.id,
+                        author: message.senderUsername,
+                        message: message.text,
+                        timestamp: message.timestamp
+                    }]);
+                }
             }
+            setLoadMoreButtonHidden(false)
         }
     }, [actualConversationUser])
 
@@ -64,6 +71,8 @@ export default function Messenger(props) {
             <div className="scrollable content">
                 <MessageList messages={messages}
                              setMessages={setMessages}
+                             loadMoreButtonHidden={loadMoreButtonHidden}
+                             setLoadMoreButtonHidden={setLoadMoreButtonHidden}
                              currentUser={currentUser.username}
                              actualConversationUser={actualConversationUser}
                 />

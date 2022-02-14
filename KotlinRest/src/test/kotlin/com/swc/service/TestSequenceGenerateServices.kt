@@ -44,4 +44,12 @@ class TestSequenceGenerateServices(
         verify(mongoOperations, Mockito.times(1)).findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))
         Assertions.assertEquals(1L, generateSequence)
     }
+
+    @Test
+    fun `Test when function generateSequence throws exception`() {
+        whenever(mongoOperations.findAndModify(anyOrNull(), anyOrNull(), anyOrNull(), eq(DatabaseSequence::class.java))).thenThrow(RuntimeException())
+        val sequenceGenerateServices = SequenceGenerateServices(mongoOperations)
+
+        Assertions.assertThrows(RuntimeException::class.java) {sequenceGenerateServices.generateSequence("12")}
+    }
 }

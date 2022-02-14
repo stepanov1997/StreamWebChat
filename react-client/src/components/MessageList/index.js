@@ -1,7 +1,6 @@
 /* eslint-disable */
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import Compose from '../Compose';
-import Toolbar from '../Toolbar';
 import Message from '../Message';
 import moment from 'moment';
 
@@ -14,7 +13,6 @@ import showMoreIcon from "../../assets/show-more-icon.png";
 export default function MessageList(props) {
 
     const [counter, setCounter] = useState(1);
-    const [loadMoreButtonHidden, setLoadMoreButtonHidden] = useState(false);
 
     const {messages, setMessages, currentUser, actualConversationUser} = props;
     const MY_USERNAME = currentUser;
@@ -27,7 +25,7 @@ export default function MessageList(props) {
         const response = await fetch(url, {})
         const oldMessages = await response.json()
         if(oldMessages.length===0){
-            setLoadMoreButtonHidden(true);
+            props.setLoadMoreButtonHidden(true);
             return;
         }
         setMessages(oldMessages.map(message => ({
@@ -100,35 +98,73 @@ export default function MessageList(props) {
         return tempMessages;
     }
 
-    async function sendMessage(message) {
+    function sendMessage(message) {
+
+        let nowTimestamp = new Date().getTime();
+
+        let item = sessionStorage.getItem("sentMessages");
+        let sentMessages = item ? JSON.parse(item) : [];
+        sentMessages.push(nowTimestamp);
+        sessionStorage.setItem("sentMessages", JSON.stringify(sentMessages));
+
+        let messageToSend = {
+            senderUsername: currentUser,
+            receiverUsername: actualConversationUser.username,
+            text: message,
+            timestamp: nowTimestamp
+        };
+        let messageToDisplay = {
+            author: currentUser,
+            message: message,
+            state: 'sending',
+            timestamp: nowTimestamp
+        };
+
+        setMessages(prevState => [...prevState, messageToDisplay].map((m, index) => {
+            m.id = index;
+            return m;
+        }));
+
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
-        let response = await fetch(`${config.root_url}/chat`, {
+
+        fetch(`${config.root_url}/chat`, {
             method: 'POST',
             headers: myHeaders,
-            body: JSON.stringify({
-                senderUsername: currentUser,
-                receiverUsername: actualConversationUser.username,
-                text: message,
-                timestamp: new Date().getTime()
-            })
-        })
+            body: JSON.stringify(messageToSend)
+        }).then(response => {
 
-        const text = await response.text()
-        console.log(text)
+            if (response.status === 200 || response.status === 201) {
+                setMessages(prevState => prevState.map((m, index) => {
+                    m.id = index;
+                    if (m.timestamp === nowTimestamp) {
+                        m.state = 'sent';
+                    }
+                    return m;
+                }));
+            } else {
+                setMessages(prevState => prevState.map((m, index) => {
+                    m.id = index;
+                    if (m.timestamp === nowTimestamp) {
+                        m.state = 'failed';
+                    }
+                    return m;
+                }));
+            }
+        });
     }
 
     return (
         <div className="message-list">
-            <img src={showMoreIcon} className={"show-more-icon"} hidden={loadMoreButtonHidden} alt="Show more" onClick={loadMore}/>
+            <img src={showMoreIcon} className={"show-more-icon"} hidden={props.loadMoreButtonHidden} alt="Show more" onClick={loadMore}/>
 
             <div className="message-list-container">{renderMessages()}</div>
 
-            <Compose handleKeyPress={async event => {
+            <Compose handleKeyPress={event => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    await sendMessage(event.target.value);
+                    sendMessage(event.target.value);
                     event.target.value = '';
                 }
             }}/>

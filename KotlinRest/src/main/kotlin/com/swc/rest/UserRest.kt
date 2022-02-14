@@ -39,7 +39,7 @@ class UserRest(val userService: UserService, val sequenceGenerateServices: Seque
             username,
             password,
             false,
-            LocalDateTime.now().minus(1, ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+            LocalDateTime.now().minus(1, ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss")),
             "users_sequence"
         );
         val userResponse = userService.addUser(user) ?: return ResponseEntity.status(HttpStatus.CONFLICT).build()

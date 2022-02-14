@@ -1,5 +1,6 @@
 package com.swc.service
 
+import com.mongodb.MongoClientException
 import com.swc.model.User
 import com.swc.model.UserUserModel
 import com.swc.repository.UserRepository
@@ -43,6 +44,16 @@ class TestUserService(
         verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(0)).insert(eq(u))
         assertNull(addUser)
+    }
+
+    @Test
+    fun `Test addUser method - userRepository returns null`() {
+        val u = User(1, "", "", "test", "test", true, "test", "test")
+        whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(null)
+        Assertions.assertThrows(NullPointerException::class.java) {userService.addUser(u)}
+
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
+        verify(userRepository, Mockito.times(0)).insert(eq(u))
     }
 
     @Test
@@ -126,6 +137,21 @@ class TestUserService(
     }
 
     @Test
+    fun `Test login method - isOnline false`() {
+        whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(
+            listOf(
+                User(1, "", "", "test", "test2", true, "test", "test"),
+                User(2, "", "", "test2", "test2", false, "test2", "test2")
+            )
+        )
+        val userModel = userService.login("test", "test2")
+
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
+        assertNotNull(userModel)
+        assertEquals(userModel.username, "test")
+    }
+
+    @Test
     fun `Test login method - saving with error`() {
         whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(
             listOf(
@@ -138,6 +164,16 @@ class TestUserService(
         Assertions.assertThrows(RuntimeException::class.java) { userService.login("test", "test") }
         verify(userRepository, Mockito.times(1)).findByUsername(any())
         verify(userRepository, Mockito.times(1)).save(any())
+    }
+
+    @Test
+    fun `Test login method - throws exception`() {
+        whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenThrow(MongoClientException(""))
+        whenever(userRepository.save(ArgumentMatchers.any(User::class.java))).thenThrow(RuntimeException())
+
+        Assertions.assertThrows(MongoClientException::class.java) { userService.login("test", "test") }
+        verify(userRepository, Mockito.times(1)).findByUsername(any())
+        verify(userRepository, Mockito.times(0)).save(any())
     }
 
     @Test
@@ -181,5 +217,13 @@ class TestUserService(
                 User(3, "", "", "test3", "test3", true, "test3", "test3")
             )
         )
+    }
+
+    @Test
+    fun `Test getOnlineUsers method - throws exception`() {
+        whenever(userRepository.findAll()).thenThrow(RuntimeException())
+
+        Assertions.assertThrows(RuntimeException::class.java) { userService.getOnlineUsers() }
+        verify(userRepository, Mockito.times(1)).findAll()
     }
 }

@@ -13,6 +13,10 @@ import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import java.io.Serializable
+import java.time.LocalDateTime
+import java.time.LocalDateTime.now
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 
 @RestController
@@ -60,6 +64,12 @@ class ChatRest(
 
     @GetMapping("conversations/{username}")
     fun getAllConversations(@PathVariable username: String): ResponseEntity<List<Map<String, Serializable>>> {
+        userRepository.findByUsername(username)
+            ?.first()
+            .let {
+                it?.lastOnline = now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss"))
+                if(it!=null) userRepository.save(it)
+            }
         return ResponseEntity.ok(chatService.getConversationsForUser(username));
     }
 }
