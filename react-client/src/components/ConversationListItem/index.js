@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import shave from 'shave';
 
+import img from '../../assets/user.png'
 import './ConversationListItem.css';
 import moment from "moment";
 
@@ -17,7 +18,7 @@ export default function ConversationListItem(props) {
     return (
         <div className={`conversation-list-item${isSelected}`} onClick={_ => props.setActualConversationUser(props.data)}>
             <img className="conversation-photo"
-                 src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation"/>
+                 src={img} alt="conversation"/>
             <div className="conversation-info">
                 <h1 className="conversation-title">{capitalize(name)} {capitalize(surname)} {isOnline ? ("🟢") : ("⚪")}</h1>
                 {exists &&

@@ -3,11 +3,12 @@ import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
 import './Messenger.css';
 import config from '../../assets/config.json'
+import img from '../../assets/user.png'
 
 function MyProfile(props) {
     return (<div className={`current-user`}>
         <img className="conversation-photo"
-             src={"https://upload.wikimedia.org/wikipedia/commons/f/f7/Administration1.png"} alt="conversation"/>
+             src={img} alt="conversation"/>
         <div className="conversation-info">
             <h1 className="conversation-title">{props.currentUser.username}</h1>
         </div>
